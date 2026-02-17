@@ -1,0 +1,209 @@
+.welcome {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink-mid);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ═══ INK WASH CLOUDS ═══ */
+.welcome__cloud {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+    animation: subtleFloat 12s ease-in-out infinite;
+}
+
+.welcome__cloud--1 {
+    width: 400px;
+    height: 300px;
+    top: 10%;
+    left: 15%;
+    background: radial-gradient(ellipse,
+            rgba(201, 86, 60, 0.045) 0%,
+            transparent 70%);
+    animation-delay: 0s;
+}
+
+.welcome__cloud--2 {
+    width: 350px;
+    height: 250px;
+    bottom: 15%;
+    right: 20%;
+    background: radial-gradient(ellipse,
+            rgba(184, 150, 90, 0.035) 0%,
+            transparent 70%);
+    animation-delay: -4s;
+}
+
+.welcome__cloud--3 {
+    width: 300px;
+    height: 300px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse,
+            rgba(127, 174, 139, 0.025) 0%,
+            transparent 60%);
+    animation-delay: -8s;
+}
+
+/* ═══ CONTENT ═══ */
+.welcome__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.welcome__icon-wrap {
+    position: relative;
+}
+
+.welcome__icon {
+    color: var(--cinnabar);
+    filter: drop-shadow(0 0 16px rgba(201, 86, 60, 0.25));
+}
+
+/* Ink ripple behind icon */
+.welcome__icon-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+            rgba(201, 86, 60, 0.06) 0%,
+            transparent 70%);
+    animation: glowPulse 4s ease-in-out infinite;
+}
+
+.welcome__title {
+    font-family: var(--font-heading);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 4px;
+    margin-top: 4px;
+}
+
+.welcome__subtitle {
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--text-tertiary);
+    text-align: center;
+    line-height: 1.8;
+}
+
+.welcome__action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 28px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--cinnabar) 0%, var(--cinnabar-deep) 100%);
+    color: var(--text-on-accent);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    box-shadow:
+        0 2px 8px rgba(201, 86, 60, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: all var(--duration-normal) var(--ease-out-expo);
+}
+
+.welcome__action:hover {
+    box-shadow:
+        0 4px 20px rgba(201, 86, 60, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.welcome__shortcut {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+}
+
+/* ═══ RECENT PROJECTS ═══ */
+.welcome__recent {
+    margin-top: 20px;
+    width: 320px;
+}
+
+.welcome__recent-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px 8px;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-tertiary);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.welcome__recent-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome__recent-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all var(--duration-fast) ease;
+    text-align: left;
+}
+
+.welcome__recent-item:hover {
+    background: var(--ink-hover);
+    color: var(--text-primary);
+}
+
+.welcome__recent-icon {
+    color: var(--gold);
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.welcome__recent-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.welcome__recent-time {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.welcome__recent-arrow {
+    color: var(--text-tertiary);
+    opacity: 0;
+    flex-shrink: 0;
+    transition: opacity var(--duration-fast) ease;
+}
+
+.welcome__recent-item:hover .welcome__recent-arrow {
+    opacity: 0.7;
+}

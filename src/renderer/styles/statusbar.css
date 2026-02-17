@@ -1,0 +1,117 @@
+.statusbar {
+    height: var(--statusbar-height);
+    background: var(--ink-deep);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* Top ink-gradient line */
+.statusbar::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent 5%,
+            rgba(184, 150, 90, 0.15) 50%,
+            transparent 95%);
+}
+
+.statusbar__left,
+.statusbar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.statusbar__item {
+    font-family: var(--font-ui);
+    letter-spacing: 0.3px;
+}
+
+.statusbar__divider {
+    width: 1px;
+    height: 12px;
+    background: var(--border-medium);
+}
+
+.statusbar__ai-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 12px;
+    border-radius: 12px;
+    background: var(--cinnabar-glow);
+    color: var(--cinnabar-soft);
+    cursor: pointer;
+    border: 1px solid rgba(201, 86, 60, 0.18);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 500;
+    transition: all var(--duration-normal) var(--ease-out-expo);
+    animation: glowPulse 3s ease-in-out infinite;
+}
+
+.statusbar__ai-btn:hover {
+    background: rgba(201, 86, 60, 0.22);
+    border-color: rgba(201, 86, 60, 0.4);
+    box-shadow: var(--shadow-glow-cinnabar);
+    color: var(--cinnabar);
+    animation: none;
+}
+
+.statusbar__mode {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--gold);
+}
+
+.statusbar__unsaved {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--cinnabar-soft);
+}
+
+.statusbar__saved {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: rgba(120, 180, 100, 0.85);
+}
+
+.statusbar__save-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.statusbar__save-dot--unsaved {
+    background: var(--cinnabar-soft);
+    animation: saveDotPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes saveDotPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.4;
+        transform: scale(0.7);
+    }
+}

@@ -1,0 +1,108 @@
+.sidebar {
+    background: var(--ink-dark);
+    border-right: 1px solid var(--border-subtle);
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+
+    /* Subtle paper-fiber diagonal texture */
+    background-image:
+        repeating-linear-gradient(135deg,
+            transparent,
+            transparent 40px,
+            rgba(255, 248, 235, 0.006) 40px,
+            rgba(255, 248, 235, 0.006) 41px);
+}
+
+.sidebar__inner {
+    width: var(--sidebar-width);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar__header {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+.sidebar__title {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-secondary);
+}
+
+.sidebar__action {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    transition: all var(--duration-fast) ease;
+}
+
+.sidebar__action:hover {
+    background: var(--ink-light);
+    color: var(--text-primary);
+}
+
+.sidebar__content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.sidebar__open-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--ink-light);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-medium);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out-expo);
+}
+
+.sidebar__open-btn:hover {
+    background: var(--ink-hover);
+    color: var(--text-primary);
+    border-color: var(--cinnabar);
+}
+
+.sidebar__placeholder {
+    padding: 20px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    text-align: center;
+    font-style: italic;
+}

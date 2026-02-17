@@ -1,0 +1,218 @@
+/* ═══ DIALOG / MODAL ═══ */
+
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.dialog {
+    background: var(--ink-dark);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), 0 0 60px rgba(0, 0, 0, 0.4);
+    width: 440px;
+    max-width: 90vw;
+    overflow: hidden;
+}
+
+.dialog__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.dialog__title {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: 0.3px;
+}
+
+.dialog__close {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) ease;
+}
+
+.dialog__close:hover {
+    background: var(--ink-light);
+    color: var(--text-primary);
+}
+
+.dialog__body {
+    padding: 20px;
+}
+
+/* Mode selector */
+.dialog__mode-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.dialog__mode-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 12px;
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    background: var(--ink-mid);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out-expo);
+}
+
+.dialog__mode-btn:hover {
+    border-color: var(--border-strong);
+    background: var(--ink-light);
+    color: var(--text-primary);
+}
+
+.dialog__mode-btn--active {
+    border-color: var(--cinnabar);
+    background: var(--cinnabar-glow);
+    color: var(--cinnabar-soft);
+    box-shadow: 0 0 20px rgba(201, 86, 60, 0.08);
+}
+
+.dialog__mode-btn--active:hover {
+    border-color: var(--cinnabar);
+    background: rgba(201, 86, 60, 0.15);
+}
+
+.dialog__mode-label {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.dialog__mode-desc {
+    font-family: var(--font-ui);
+    font-size: 10.5px;
+    opacity: 0.6;
+}
+
+/* Input */
+.dialog__input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dialog__label {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.dialog__input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--ink-mid);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color var(--duration-fast) ease;
+}
+
+.dialog__input-wrap:focus-within {
+    border-color: var(--cinnabar);
+    box-shadow: 0 0 0 2px rgba(201, 86, 60, 0.1);
+}
+
+.dialog__input {
+    flex: 1;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    caret-color: var(--cinnabar);
+}
+
+.dialog__input::placeholder {
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+.dialog__ext {
+    padding: 0 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-tertiary);
+    border-left: 1px solid var(--border-subtle);
+    user-select: none;
+}
+
+/* Footer */
+.dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.dialog__btn {
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all var(--duration-fast) ease;
+}
+
+.dialog__btn--cancel {
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.dialog__btn--cancel:hover {
+    background: var(--ink-light);
+    color: var(--text-primary);
+}
+
+.dialog__btn--primary {
+    background: var(--cinnabar);
+    color: var(--text-on-accent);
+}
+
+.dialog__btn--primary:hover {
+    background: var(--cinnabar-soft);
+    box-shadow: var(--shadow-glow-cinnabar);
+}
+
+.dialog__btn--primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+}

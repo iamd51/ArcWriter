@@ -1,0 +1,128 @@
+:root {
+  /* ═══ INKSTONE 硯墨 — DARK THEME ═══ */
+
+  /* Ink Blacks — warm undertone, like real Chinese ink */
+  --ink-deep: #0e0d0b;
+  --ink-dark: #181614;
+  --ink-mid: #221f1c;
+  --ink-light: #332f2b;
+  --ink-hover: #3e3935;
+
+  /* Paper Tones — aged rice paper */
+  --paper: #f8f3eb;
+  --paper-warm: #f0e8db;
+  --paper-dim: #e8e0d4;
+
+  /* Cinnabar 朱砂 — primary accent */
+  --cinnabar: #c9563c;
+  --cinnabar-soft: #d4795f;
+  --cinnabar-deep: #a84530;
+  --cinnabar-glow: rgba(201, 86, 60, 0.12);
+
+  /* Aged Gold 古銅 — secondary accent */
+  --gold: #b8965a;
+  --gold-soft: #cbad78;
+  --gold-glow: rgba(184, 150, 90, 0.10);
+
+  /* Celadon 青瓷 — tertiary / success */
+  --celadon: #7fae8b;
+  --celadon-glow: rgba(127, 174, 139, 0.10);
+
+  /* Text hierarchy */
+  --text-primary: #e8e0d4;
+  --text-secondary: #8a8078;
+  --text-tertiary: #5c5650;
+  --text-on-accent: #faf4ed;
+
+  /* Borders */
+  --border-subtle: rgba(255, 248, 235, 0.05);
+  --border-medium: rgba(255, 248, 235, 0.09);
+  --border-strong: rgba(255, 248, 235, 0.14);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-inset: inset 0 1px 0 rgba(255, 248, 235, 0.03);
+  --shadow-glow-cinnabar: 0 0 24px rgba(201, 86, 60, 0.18);
+  --shadow-glow-gold: 0 0 20px rgba(184, 150, 90, 0.12);
+
+  /* Layout dimensions */
+  --titlebar-height: 42px;
+  --activitybar-width: 50px;
+  --sidebar-width: 260px;
+  --statusbar-height: 30px;
+  --toolbar-height: 42px;
+  --tab-height: 38px;
+
+  /* Radii */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Motion curves */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --duration-slow: 400ms;
+  --duration-entrance: 600ms;
+
+  /* Typography */
+  --font-ui: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'LXGW WenKai TC', 'Noto Serif TC', serif;
+  --font-heading: 'Newsreader', 'Georgia', serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+/* ═══ RICE PAPER 宣紙 — LIGHT THEME ═══ */
+[data-theme="light"] {
+  /* Ink → Paper: warm, aged rice paper tones */
+  --ink-deep: #f5f0e8;
+  --ink-dark: #ebe5da;
+  --ink-mid: #e2dbd0;
+  --ink-light: #d8d0c4;
+  --ink-hover: #cfc6b9;
+
+  /* Paper → Ink (inverted for content contrast) */
+  --paper: #2c2824;
+  --paper-warm: #3a3530;
+  --paper-dim: #4a443e;
+
+  /* Cinnabar — slightly deeper for light bg contrast */
+  --cinnabar: #b8472e;
+  --cinnabar-soft: #c96a50;
+  --cinnabar-deep: #9a3a26;
+  --cinnabar-glow: rgba(184, 71, 46, 0.10);
+
+  /* Aged Gold — deeper */
+  --gold: #9a7d42;
+  --gold-soft: #b09358;
+  --gold-glow: rgba(154, 125, 66, 0.10);
+
+  /* Celadon — deeper */
+  --celadon: #5c9068;
+  --celadon-glow: rgba(92, 144, 104, 0.10);
+
+  /* Text — dark ink on light paper */
+  --text-primary: #2c2824;
+  --text-secondary: #6b6360;
+  --text-tertiary: #9a928a;
+  --text-on-accent: #faf4ed;
+
+  /* Borders — dark tones on light */
+  --border-subtle: rgba(44, 40, 36, 0.08);
+  --border-medium: rgba(44, 40, 36, 0.14);
+  --border-strong: rgba(44, 40, 36, 0.22);
+
+  /* Shadows — softer for light mode */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.14);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-glow-cinnabar: 0 0 24px rgba(184, 71, 46, 0.12);
+  --shadow-glow-gold: 0 0 20px rgba(154, 125, 66, 0.10);
+}

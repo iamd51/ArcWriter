@@ -1,0 +1,171 @@
+@import './variables.css';
+
+/* ═══ RESET & BASE ═══ */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--text-primary);
+    background: var(--ink-deep);
+
+    /* Atmospheric ink-wash ambient glow */
+    background-image:
+        radial-gradient(ellipse at 15% 50%, rgba(201, 86, 60, 0.025) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(184, 150, 90, 0.02) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 85%, rgba(127, 174, 139, 0.015) 0%, transparent 45%);
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══ SELECTION ═══ */
+::selection {
+    background: rgba(184, 150, 90, 0.35);
+    color: var(--text-primary);
+}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--ink-hover);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* ═══ FOCUS ═══ */
+:focus-visible {
+    outline: 1px solid var(--cinnabar);
+    outline-offset: -1px;
+    border-radius: var(--radius-xs);
+}
+
+/* ═══ ENTRANCE ANIMATIONS ═══ */
+@keyframes inkReveal {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+        filter: blur(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes inkFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes inkSlideRight {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes cursorBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+@keyframes subtleFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes glowPulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ═══ APP LAYOUT ═══ */
+.app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.app__body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.app__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* ═══ UTILITY ═══ */
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

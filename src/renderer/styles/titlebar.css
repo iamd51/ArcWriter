@@ -1,0 +1,181 @@
+.titlebar {
+    height: var(--titlebar-height);
+    background: var(--ink-deep);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-app-region: drag;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 0 14px;
+    position: relative;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+/* Ink gradient line at bottom */
+.titlebar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent 5%,
+            var(--cinnabar) 25%,
+            var(--gold) 50%,
+            var(--cinnabar) 75%,
+            transparent 95%);
+    opacity: 0.25;
+}
+
+.titlebar__left {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 100%;
+    -webkit-app-region: no-drag;
+}
+
+.titlebar__brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 12px;
+    -webkit-app-region: drag;
+}
+
+.titlebar__logo {
+    color: var(--cinnabar);
+    filter: drop-shadow(0 0 6px rgba(201, 86, 60, 0.3));
+}
+
+.titlebar__title {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 1.5px;
+}
+
+/* ─── Menu Bar ─── */
+
+.titlebar__menu {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    -webkit-app-region: no-drag;
+}
+
+.titlebar__menu-item {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.titlebar__menu-trigger {
+    height: 100%;
+    padding: 0 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all var(--duration-fast) ease;
+    letter-spacing: 0.3px;
+}
+
+.titlebar__menu-trigger:hover {
+    background: var(--ink-light);
+    color: var(--text-primary);
+}
+
+.titlebar__menu-trigger--active {
+    background: var(--ink-mid);
+    color: var(--text-primary);
+}
+
+/* ─── Dropdown ─── */
+
+.titlebar__dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 220px;
+    background: var(--ink-dark);
+    border: 1px solid var(--border-medium);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    padding: 4px 0;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+}
+
+.titlebar__dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 7px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background var(--duration-fast) ease;
+    text-align: left;
+}
+
+.titlebar__dropdown-item:hover {
+    background: var(--ink-light);
+}
+
+.titlebar__shortcut {
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    margin-left: 24px;
+    white-space: nowrap;
+}
+
+.titlebar__dropdown-divider {
+    height: 1px;
+    margin: 4px 8px;
+    background: var(--border-medium);
+}
+
+/* ─── Window Controls ─── */
+
+.titlebar__controls {
+    display: flex;
+    -webkit-app-region: no-drag;
+    height: 100%;
+}
+
+.titlebar__btn {
+    width: 48px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+        background var(--duration-fast) ease,
+        color var(--duration-fast) ease;
+}
+
+.titlebar__btn:hover {
+    background: var(--ink-light);
+    color: var(--text-primary);
+}
+
+.titlebar__btn--close:hover {
+    background: var(--cinnabar);
+    color: var(--text-on-accent);
+}

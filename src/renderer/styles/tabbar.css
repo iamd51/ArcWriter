@@ -1,0 +1,93 @@
+.tabbar {
+    height: var(--tab-height);
+    background: var(--ink-dark);
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+.tabbar::-webkit-scrollbar {
+    height: 0;
+}
+
+.tabbar__tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 6px 0 14px;
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    position: relative;
+    transition:
+        color var(--duration-fast) ease,
+        background var(--duration-fast) ease;
+    border-right: 1px solid var(--border-subtle);
+    min-width: 0;
+}
+
+.tabbar__tab:hover {
+    color: var(--text-secondary);
+    background: rgba(255, 248, 235, 0.02);
+}
+
+.tabbar__tab--active {
+    color: var(--text-primary);
+    background: var(--ink-mid);
+}
+
+/* Cinnabar bottom accent for active tab */
+.tabbar__tab--active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--cinnabar);
+    box-shadow: 0 0 8px rgba(201, 86, 60, 0.3);
+}
+
+.tabbar__modified {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cinnabar);
+    flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(201, 86, 60, 0.4);
+}
+
+.tabbar__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tabbar__close {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-xs);
+    opacity: 0;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    background: none;
+    border: none;
+    flex-shrink: 0;
+    transition: all var(--duration-fast) ease;
+}
+
+.tabbar__tab:hover .tabbar__close {
+    opacity: 1;
+}
+
+.tabbar__close:hover {
+    background: var(--ink-hover);
+    color: var(--text-primary);
+}

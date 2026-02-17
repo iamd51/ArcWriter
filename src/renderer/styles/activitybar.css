@@ -1,0 +1,74 @@
+.activitybar {
+    width: var(--activitybar-width);
+    background: var(--ink-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    border-right: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+    position: relative;
+
+    /* Subtle woven-paper texture */
+    background-image:
+        repeating-linear-gradient(0deg,
+            transparent,
+            transparent 24px,
+            rgba(255, 248, 235, 0.008) 24px,
+            rgba(255, 248, 235, 0.008) 25px);
+}
+
+.activitybar__top,
+.activitybar__bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    padding: 0 5px;
+}
+
+.activitybar__spacer {
+    flex: 1;
+}
+
+.activitybar__item {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    position: relative;
+    transition:
+        color var(--duration-normal) var(--ease-out-expo),
+        background var(--duration-normal) var(--ease-out-expo);
+}
+
+.activitybar__item:hover {
+    color: var(--text-secondary);
+    background: var(--ink-light);
+}
+
+.activitybar__item--active {
+    color: var(--cinnabar);
+    background: var(--cinnabar-glow);
+}
+
+/* Left accent bar for active item */
+.activitybar__item--active::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 20px;
+    background: var(--cinnabar);
+    border-radius: 0 3px 3px 0;
+    box-shadow: var(--shadow-glow-cinnabar);
+}
