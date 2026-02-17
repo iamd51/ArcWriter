@@ -6,9 +6,10 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppState, useAppActions } from '../store/useAppStore'
+import { parseScreenplayJSON } from './ScreenplayEditor'
 import {
     streamChat, buildMessages, buildBibleContext, getConfig, setConfig,
-    getActiveProviderConfig, getActiveModel, PROVIDERS,
+    getActiveProviderConfig, getActiveModel, getAllProviders,
     applyProfile,
 } from '../services/aiService'
 import '../styles/aipanel.css'
@@ -42,14 +43,34 @@ export default function AIPanel() {
     // Get current editor context
     const getEditorContext = useCallback(() => {
         const activeFile = openFiles.find(f => f.path === activeFilePath)
-        let text = ''
-        if (activeFile?.content) {
-            // Strip HTML tags for novel content
-            text = typeof activeFile.content === 'string'
-                ? activeFile.content.replace(/<[^>]*>/g, '').slice(0, 3000)
-                : JSON.stringify(activeFile.content).slice(0, 3000)
+        if (!activeFile?.content) return ''
+
+        const ext = activeFilePath?.split('.').pop()?.toLowerCase()
+
+        // Screenplay (.arc) — extract human-readable dialogue/action text
+        if (ext === 'arc') {
+            const data = parseScreenplayJSON(activeFile.content)
+            if (data?.scenes) {
+                const lines = []
+                data.scenes.forEach(scene => {
+                    lines.push(`--- 場景 ${scene.scene} ---`)
+                    scene.rows?.forEach(row => {
+                        const parts = []
+                        if (row.heading) parts.push(`[${row.heading}]`)
+                        if (row.character) parts.push(row.character + '：')
+                        if (row.dialogue) parts.push(row.dialogue.replace(/<[^>]*>/g, ''))
+                        if (row.action) parts.push(`（${row.action.replace(/<[^>]*>/g, '')}）`)
+                        if (parts.length > 0) lines.push(parts.join(''))
+                    })
+                })
+                return lines.join('\n').slice(0, 3000)
+            }
         }
-        return text
+
+        // Novel — strip HTML
+        return typeof activeFile.content === 'string'
+            ? activeFile.content.replace(/<[^>]*>/g, '').slice(0, 3000)
+            : ''
     }, [activeFilePath, openFiles])
 
     const handleSend = useCallback(async (promptOverride) => {
@@ -123,10 +144,39 @@ export default function AIPanel() {
     const handleInsert = useCallback((content) => {
         if (!activeFilePath) return
         const activeFile = openFiles.find(f => f.path === activeFilePath)
-        if (activeFile) {
-            const newContent = activeFile.content + '\n\n' + content
-            updateContent(activeFilePath, newContent)
+        if (!activeFile) return
+
+        const ext = activeFilePath?.split('.').pop()?.toLowerCase()
+
+        // Screenplay mode — add AI text as new dialogue row(s)
+        if (ext === 'arc') {
+            const data = parseScreenplayJSON(activeFile.content)
+            if (data?.scenes && data.scenes.length > 0) {
+                const lastScene = data.scenes[data.scenes.length - 1]
+                // Split AI response by lines and create rows
+                const lines = content.split('\n').filter(l => l.trim())
+                lines.forEach(line => {
+                    lastScene.rows.push({
+                        heading: '',
+                        character: '',
+                        dialogue: line.trim(),
+                        action: '',
+                        notes: '',
+                    })
+                })
+                const json = JSON.stringify({
+                    format: 'screenplay',
+                    version: 1,
+                    scenes: data.scenes.map(s => ({ scene: s.scene, rows: s.rows })),
+                }, null, 2)
+                updateContent(activeFilePath, json)
+            }
+            return
         }
+
+        // Novel mode — append text
+        const newContent = (activeFile.content || '') + '\n\n' + content
+        updateContent(activeFilePath, newContent)
     }, [activeFilePath, openFiles, updateContent])
 
     const handleKeyDown = useCallback((e) => {
@@ -142,8 +192,9 @@ export default function AIPanel() {
     const currentModel = getActiveModel(config)
     const pid = config.activeProvider
     const pc = getActiveProviderConfig(config)
-    const providerPreset = PROVIDERS[pid] || PROVIDERS.custom
-    const allModels = [...(providerPreset.models || []), ...(pc.customModels || [])]
+    const allProviderMap = getAllProviders(config)
+    const providerInfo = allProviderMap[pid] || { label: '?', models: [] }
+    const allModels = [...(providerInfo.models || []), ...(pc.customModels || [])]
     const profiles = config.profiles || []
 
     const handleModelSwitch = useCallback((model) => {
@@ -223,7 +274,7 @@ export default function AIPanel() {
                         )}
                         {/* Available models */}
                         <div className="ai-panel__model-section">
-                            <div className="ai-panel__model-section-label">{providerPreset.label}</div>
+                            <div className="ai-panel__model-section-label">{providerInfo.label}</div>
                             {allModels.map(m => (
                                 <button
                                     key={m}

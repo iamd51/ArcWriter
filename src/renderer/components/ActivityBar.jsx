@@ -1,4 +1,4 @@
-import { Files, Search, BookOpen, Sparkles, Settings, Sun, Moon } from 'lucide-react'
+import { Files, Search, BookOpen, Sparkles, History, Settings, Sun, Moon, BarChart3, List, GitFork } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppState, useAppActions } from '../store/useAppStore'
 import '../styles/activitybar.css'
@@ -8,6 +8,10 @@ const panels = [
     { id: 'search', icon: Search, label: '搜尋' },
     { id: 'bible', icon: BookOpen, label: '故事聖經' },
     { id: 'ai', icon: Sparkles, label: 'AI 助手' },
+    { id: 'history', icon: History, label: '版本歷史' },
+    { id: 'dashboard', icon: BarChart3, label: '儀表板' },
+    { id: 'outline', icon: List, label: '大綱' },
+    { id: 'relationships', icon: GitFork, label: '角色關係' },
 ]
 
 const bottomItems = [

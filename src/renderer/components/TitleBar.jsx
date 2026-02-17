@@ -14,6 +14,8 @@ const MENU_ITEMS = [
             { divider: true },
             { label: '儲存', action: 'save', shortcut: 'Ctrl+S' },
             { label: '另存新檔', action: 'saveAs', shortcut: 'Ctrl+Shift+S' },
+            { divider: true },
+            { label: '匯出…', action: 'export', shortcut: 'Ctrl+E' },
         ],
     },
     {

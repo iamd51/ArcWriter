@@ -219,4 +219,74 @@ export function setupFileHandlers(mainWindow) {
             return false
         }
     })
+
+    // ═══ Snapshots (Version History) ═══
+    const SNAPSHOTS_DIR = '.snapshots'
+
+    ipcMain.handle('create-snapshot', async (_event, projectPath, filePath, label) => {
+        try {
+            const fileName = path.basename(filePath)
+            const snapshotDir = path.join(projectPath, SNAPSHOTS_DIR, fileName)
+            if (!fs.existsSync(snapshotDir)) {
+                fs.mkdirSync(snapshotDir, { recursive: true })
+            }
+            const content = fs.readFileSync(filePath, 'utf-8')
+            const timestamp = Date.now()
+            const snapshot = { label: label || '', timestamp, fileName, content }
+            const snapshotPath = path.join(snapshotDir, `${timestamp}.json`)
+            fs.writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2), 'utf-8')
+            return { ok: true, timestamp, path: snapshotPath }
+        } catch (e) {
+            return { ok: false, error: e.message }
+        }
+    })
+
+    ipcMain.handle('list-snapshots', async (_event, projectPath, filePath) => {
+        try {
+            const fileName = path.basename(filePath)
+            const snapshotDir = path.join(projectPath, SNAPSHOTS_DIR, fileName)
+            if (!fs.existsSync(snapshotDir)) return []
+
+            const files = fs.readdirSync(snapshotDir)
+                .filter(f => f.endsWith('.json'))
+                .sort((a, b) => b.localeCompare(a)) // newest first
+
+            return files.map(f => {
+                try {
+                    const raw = fs.readFileSync(path.join(snapshotDir, f), 'utf-8')
+                    const data = JSON.parse(raw)
+                    return {
+                        path: path.join(snapshotDir, f),
+                        timestamp: data.timestamp,
+                        label: data.label || '',
+                        size: raw.length,
+                    }
+                } catch {
+                    return null
+                }
+            }).filter(Boolean)
+        } catch {
+            return []
+        }
+    })
+
+    ipcMain.handle('read-snapshot', async (_event, snapshotPath) => {
+        try {
+            const raw = fs.readFileSync(snapshotPath, 'utf-8')
+            return JSON.parse(raw)
+        } catch {
+            return null
+        }
+    })
+
+    ipcMain.handle('delete-snapshot', async (_event, snapshotPath) => {
+        try {
+            if (fs.existsSync(snapshotPath)) {
+                fs.unlinkSync(snapshotPath)
+            }
+            return true
+        } catch {
+            return false
+        }
+    })
 }

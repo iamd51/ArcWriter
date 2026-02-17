@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { setupFileHandlers } from './fileService.js'
 
@@ -42,6 +43,49 @@ function createWindow() {
     })
     mainWindow.on('unmaximize', () => {
         mainWindow.webContents.send('window-maximized-change', false)
+    })
+
+    // ═══ Save Dialog ═══
+    ipcMain.handle('show-save-dialog', async (_event, options) => {
+        const result = await dialog.showSaveDialog(mainWindow, options)
+        return result
+    })
+
+    // ═══ Export PDF ═══
+    ipcMain.handle('export-pdf', async (_event, htmlContent, savePath, options = {}) => {
+        let printWin = null
+        try {
+            printWin = new BrowserWindow({
+                width: 800,
+                height: 1200,
+                show: false,
+                webPreferences: { contextIsolation: true, nodeIntegration: false },
+            })
+
+            await printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`)
+
+            // Wait for content to render
+            await new Promise(r => setTimeout(r, 500))
+
+            const pdfData = await printWin.webContents.printToPDF({
+                pageSize: options.pageSize || 'A4',
+                printBackground: true,
+                margins: {
+                    marginType: 'custom',
+                    top: options.marginTop ?? 1.5,
+                    bottom: options.marginBottom ?? 1.5,
+                    left: options.marginLeft ?? 2,
+                    right: options.marginRight ?? 2,
+                },
+            })
+
+            fs.writeFileSync(savePath, pdfData)
+            return { ok: true, path: savePath }
+        } catch (e) {
+            return { ok: false, error: e.message }
+        } finally {
+            if (printWin && !printWin.isDestroyed()) printWin.close()
+        }
     })
 
     // File system handlers

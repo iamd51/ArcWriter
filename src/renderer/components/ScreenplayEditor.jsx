@@ -18,19 +18,53 @@ function createEmptyScene(sceneNum) {
     }
 }
 
-function parseScreenplayData(content) {
-    if (!content) {
-        return { format: 'screenplay', version: 1, scenes: [createEmptyScene(1)] }
-    }
+/**
+ * Parse a screenplay JSON string with recovery for corrupted data.
+ * Exported so AIPanel can reuse it.
+ */
+export function parseScreenplayJSON(content) {
+    if (!content) return null
+    const raw = typeof content === 'string' ? content : JSON.stringify(content)
+
+    // Try direct parse first
     try {
-        const data = typeof content === 'string' ? JSON.parse(content) : content
-        if (data.format === 'screenplay' && data.scenes) {
-            return data
-        }
+        const data = JSON.parse(raw)
+        if (data.format === 'screenplay' && data.scenes) return data
     } catch {
-        // not valid JSON
+        // JSON is corrupted — try to recover the first valid JSON object
+        try {
+            let depth = 0, endIdx = -1
+            for (let i = 0; i < raw.length; i++) {
+                const ch = raw[i]
+                if (ch === '"') {
+                    i++
+                    while (i < raw.length && raw[i] !== '"') {
+                        if (raw[i] === '\\') i++
+                        i++
+                    }
+                    continue
+                }
+                if (ch === '{') depth++
+                if (ch === '}') {
+                    depth--
+                    if (depth === 0) { endIdx = i; break }
+                }
+            }
+            if (endIdx > 0) {
+                const firstJson = raw.slice(0, endIdx + 1)
+                const data = JSON.parse(firstJson)
+                if (data.format === 'screenplay' && data.scenes) {
+                    console.warn('[ScreenplayEditor] Recovered corrupted JSON')
+                    return data
+                }
+            }
+        } catch { /* recovery also failed */ }
     }
-    return { format: 'screenplay', version: 1, scenes: [createEmptyScene(1)] }
+    return null
+}
+
+function parseScreenplayData(content) {
+    return parseScreenplayJSON(content) || { format: 'screenplay', version: 1, scenes: [createEmptyScene(1)] }
 }
 
 export default function ScreenplayEditor() {
@@ -44,6 +78,7 @@ export default function ScreenplayEditor() {
     const [contextMenu, setContextMenu] = useState(null)
     const containerRef = useRef(null)
     const lastFilePath = useRef(activeFilePath)
+    const lastPersistedContent = useRef(null) // track content we set ourselves
 
     // Column widths state (resizable)
     const [columnWidths, setColumnWidths] = useState(() => {
@@ -53,13 +88,25 @@ export default function ScreenplayEditor() {
     })
     const resizeRef = useRef(null) // for tracking resize drag
 
-    // Sync from file when active file changes
+    // Sync from file when active file changes OR its content is loaded/updated externally
     useEffect(() => {
-        if (activeFile && activeFilePath !== lastFilePath.current) {
-            setData(parseScreenplayData(activeFile.content))
+        if (!activeFile) return
+        const fileContent = activeFile.content
+
+        // If the path changed, always re-parse
+        if (activeFilePath !== lastFilePath.current) {
             lastFilePath.current = activeFilePath
+            lastPersistedContent.current = fileContent
+            setData(parseScreenplayData(fileContent))
+            return
         }
-    }, [activeFilePath, activeFile])
+
+        // If content changed but NOT from our own persistData, re-parse
+        if (fileContent && fileContent !== lastPersistedContent.current) {
+            lastPersistedContent.current = fileContent
+            setData(parseScreenplayData(fileContent))
+        }
+    }, [activeFilePath, activeFile?.content])
 
     // Persist changes back to store
     const persistData = useCallback((newData) => {
@@ -73,6 +120,7 @@ export default function ScreenplayEditor() {
                     rows: s.rows,
                 })),
             }, null, 2)
+            lastPersistedContent.current = json  // mark as our own write
             dispatch({
                 type: 'UPDATE_FILE_CONTENT',
                 payload: { path: activeFilePath, content: json },
@@ -262,6 +310,38 @@ export default function ScreenplayEditor() {
         }))
     }, [allCollapsed])
 
+    // ── Handle TSV paste from Excel/spreadsheets ──
+    const handlePaste = useCallback((sceneIndex, rowIndex, parsedRows) => {
+        if (!parsedRows || parsedRows.length === 0) return
+
+        setData(prev => {
+            const newData = {
+                ...prev,
+                scenes: prev.scenes.map((scene, si) => {
+                    if (si !== sceneIndex) return scene
+
+                    const newRows = [...scene.rows]
+
+                    // First parsed row: merge into the existing target row
+                    const firstParsed = parsedRows[0]
+                    newRows[rowIndex] = { ...newRows[rowIndex], ...firstParsed }
+
+                    // Subsequent parsed rows: insert after the target row
+                    for (let i = 1; i < parsedRows.length; i++) {
+                        const newRow = { heading: '', character: '', dialogue: '', action: '', notes: '', ...parsedRows[i] }
+                        newRows.splice(rowIndex + i, 0, newRow)
+                    }
+
+                    return { ...scene, rows: newRows }
+                }),
+            }
+
+            clearTimeout(handlePaste._timer)
+            handlePaste._timer = setTimeout(() => persistData(newData), 300)
+            return newData
+        })
+    }, [persistData])
+
     // Apply text style on selected cell
     const handleApplyStyle = useCallback((style) => {
         switch (style) {
@@ -408,6 +488,7 @@ export default function ScreenplayEditor() {
                                     onSelect={handleSelect}
                                     onNavigate={handleNavigate}
                                     onContextMenu={handleContextMenu}
+                                    onPaste={handlePaste}
                                 />
                             ))}
                         </div>

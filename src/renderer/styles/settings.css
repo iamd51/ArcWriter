@@ -588,3 +588,118 @@
     background: var(--border-subtle);
     margin: 12px 0;
 }
+
+/* ─── Custom Providers ─── */
+.settings-panel__custom-providers {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 6px;
+}
+
+.settings-panel__custom-provider {
+    display: flex;
+    align-items: center;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    background: var(--ink-mid);
+    transition: all var(--duration-fast) ease;
+}
+
+.settings-panel__custom-provider:hover {
+    border-color: var(--border-medium);
+}
+
+.settings-panel__custom-provider--active {
+    background: var(--cinnabar-glow);
+    border-color: var(--cinnabar);
+}
+
+.settings-panel__custom-provider-name {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.settings-panel__custom-provider-del {
+    display: flex;
+    padding: 5px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    opacity: 0;
+    transition: all var(--duration-fast) ease;
+}
+
+.settings-panel__custom-provider:hover .settings-panel__custom-provider-del {
+    opacity: 1;
+}
+
+.settings-panel__custom-provider-del:hover {
+    color: #e88;
+}
+
+/* ─── Add Endpoint ─── */
+.settings-panel__add-endpoint-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 6px 10px;
+    border: 1px dashed var(--border-medium);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 10.5px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    transition: all var(--duration-fast) ease;
+}
+
+.settings-panel__add-endpoint-btn:hover {
+    background: var(--ink-hover);
+    border-color: var(--cinnabar);
+    color: var(--cinnabar-soft);
+}
+
+.settings-panel__add-endpoint {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--ink-mid);
+}
+
+.settings-panel__cancel-btn {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid var(--border-subtle);
+    background: transparent;
+    color: var(--text-tertiary);
+    font-family: var(--font-ui);
+    font-size: 10.5px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) ease;
+}
+
+.settings-panel__cancel-btn:hover {
+    background: var(--ink-hover);
+    color: var(--text-primary);
+}

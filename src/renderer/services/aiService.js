@@ -1,13 +1,14 @@
 /**
  * AI Service — handles LLM API calls with OpenAI-compatible format.
+ * Built-in providers (Gemini, OpenAI) + unlimited custom endpoints.
  * Per-provider config + saved model profiles for quick switching.
  * Stores config in localStorage.
  */
 
 const CONFIG_KEY = 'arcwriter_ai_config'
 
-// ═══ Provider presets ═══
-export const PROVIDERS = {
+// ═══ Built-in provider presets ═══
+export const BUILTIN_PROVIDERS = {
     gemini: {
         label: 'Google Gemini',
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/',
@@ -18,6 +19,7 @@ export const PROVIDERS = {
             'gemini-1.5-pro',
         ],
         defaultModel: 'gemini-2.0-flash',
+        builtin: true,
     },
     openai: {
         label: 'OpenAI',
@@ -29,12 +31,7 @@ export const PROVIDERS = {
             'gpt-3.5-turbo',
         ],
         defaultModel: 'gpt-4o-mini',
-    },
-    custom: {
-        label: '自訂端點',
-        endpoint: '',
-        models: [],
-        defaultModel: '',
+        builtin: true,
     },
 }
 
@@ -58,28 +55,32 @@ export const ROLEPLAY_SYSTEM_PROMPT = `你正在進行角色扮演。你需要�
 - 回應要符合角色的背景設定和表達特點
 - 不要加入旁白或 OOC（Out of Character）的解釋`
 
-// ═══ Default per-provider config ═══
+// ═══ Helpers ═══
+function genId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+}
+
 function defaultProviderConfig(providerId) {
-    const preset = PROVIDERS[providerId] || PROVIDERS.custom
+    const preset = BUILTIN_PROVIDERS[providerId]
     return {
         apiKey: '',
-        endpoint: preset.endpoint,
-        model: preset.defaultModel,
-        customModels: [],   // user-added model names
+        endpoint: preset?.endpoint || '',
+        model: preset?.defaultModel || '',
+        customModels: [],
     }
 }
 
 function defaultConfig() {
     return {
         activeProvider: 'gemini',
-        // Per-provider settings { gemini: { apiKey, endpoint, model, customModels }, ... }
         providerConfigs: {
             gemini: defaultProviderConfig('gemini'),
             openai: defaultProviderConfig('openai'),
-            custom: defaultProviderConfig('custom'),
         },
-        // Saved profiles for quick switching
-        profiles: [],  // [{ id, name, provider, model, endpoint, apiKey }]
+        // User-defined custom endpoints  [{ id, label, endpoint }]
+        customProviders: [],
+        // Saved profiles  [{ id, name, provider, model, endpoint, apiKey }]
+        profiles: [],
         activeProfileId: null,
         // Shared settings
         temperature: 0.7,
@@ -90,51 +91,99 @@ function defaultConfig() {
     }
 }
 
+// ═══ Get ALL providers (builtin + custom) as a map ═══
+export function getAllProviders(config) {
+    const map = {}
+    // Built-in
+    Object.entries(BUILTIN_PROVIDERS).forEach(([id, p]) => {
+        map[id] = { ...p }
+    })
+        // Custom endpoints
+        ; (config?.customProviders || []).forEach(cp => {
+            map[cp.id] = {
+                label: cp.label,
+                endpoint: cp.endpoint || '',
+                models: [],
+                defaultModel: '',
+                builtin: false,
+            }
+        })
+    return map
+}
+
 // ═══ Config management ═══
 export function getConfig() {
     try {
         const raw = localStorage.getItem(CONFIG_KEY)
         if (raw) {
             const parsed = JSON.parse(raw)
-            // Migration: old flat config → new per-provider config
             if (parsed && !parsed.providerConfigs) {
                 return migrateOldConfig(parsed)
             }
-            // Ensure all providers exist
-            const def = defaultConfig()
-            if (!parsed.providerConfigs) parsed.providerConfigs = def.providerConfigs
-            Object.keys(PROVIDERS).forEach(pid => {
+            // Ensure built-in providers exist
+            Object.keys(BUILTIN_PROVIDERS).forEach(pid => {
                 if (!parsed.providerConfigs[pid]) {
                     parsed.providerConfigs[pid] = defaultProviderConfig(pid)
                 }
             })
+            if (!parsed.customProviders) parsed.customProviders = []
             if (!parsed.profiles) parsed.profiles = []
+            // Migrate old single "custom" provider
+            if (parsed.providerConfigs.custom) {
+                const oldCustom = parsed.providerConfigs.custom
+                if (oldCustom.apiKey || oldCustom.endpoint) {
+                    const cpId = genId()
+                    parsed.customProviders.push({
+                        id: cpId,
+                        label: '自訂端點',
+                        endpoint: oldCustom.endpoint || '',
+                    })
+                    parsed.providerConfigs[cpId] = {
+                        apiKey: oldCustom.apiKey || '',
+                        endpoint: oldCustom.endpoint || '',
+                        model: oldCustom.model || '',
+                        customModels: oldCustom.customModels || [],
+                    }
+                    if (parsed.activeProvider === 'custom') {
+                        parsed.activeProvider = cpId
+                    }
+                }
+                delete parsed.providerConfigs.custom
+                setConfig(parsed)
+            }
             return parsed
         }
     } catch { /* ignore */ }
     return defaultConfig()
 }
 
-// Migrate from old flat config format
 function migrateOldConfig(old) {
     const cfg = defaultConfig()
     const provider = old.provider || 'gemini'
-    cfg.activeProvider = provider
     cfg.temperature = old.temperature ?? 0.7
     cfg.maxTokens = old.maxTokens ?? 2048
     cfg.systemPrompt = old.systemPrompt || DEFAULT_SYSTEM_PROMPT
     cfg.roleplayMode = old.roleplayMode || false
     cfg.roleplayCharacter = old.roleplayCharacter || ''
 
-    // Put old apiKey into correct provider
-    if (old.apiKey) {
-        cfg.providerConfigs[provider].apiKey = old.apiKey
-    }
-    if (old.model) {
-        cfg.providerConfigs[provider].model = old.model
-    }
-    if (old.endpoint && provider === 'custom') {
-        cfg.providerConfigs.custom.endpoint = old.endpoint
+    if (provider === 'custom') {
+        const cpId = genId()
+        cfg.customProviders.push({
+            id: cpId,
+            label: '自訂端點',
+            endpoint: old.endpoint || '',
+        })
+        cfg.providerConfigs[cpId] = {
+            apiKey: old.apiKey || '',
+            endpoint: old.endpoint || '',
+            model: old.model || '',
+            customModels: [],
+        }
+        cfg.activeProvider = cpId
+    } else {
+        cfg.activeProvider = provider
+        if (old.apiKey) cfg.providerConfigs[provider].apiKey = old.apiKey
+        if (old.model) cfg.providerConfigs[provider].model = old.model
     }
     setConfig(cfg)
     return cfg
@@ -163,11 +212,59 @@ export function getActiveApiKey(config) {
     return getActiveProviderConfig(config).apiKey || ''
 }
 
+// ═══ Custom provider CRUD ═══
+export function addCustomProvider(config, label, endpoint) {
+    const cpId = genId()
+    const updated = {
+        ...config,
+        customProviders: [...(config.customProviders || []), { id: cpId, label, endpoint }],
+        providerConfigs: {
+            ...config.providerConfigs,
+            [cpId]: {
+                apiKey: '',
+                endpoint,
+                model: '',
+                customModels: [],
+            },
+        },
+        activeProvider: cpId,
+        activeProfileId: null,
+    }
+    setConfig(updated)
+    return updated
+}
+
+export function removeCustomProvider(config, cpId) {
+    const updated = {
+        ...config,
+        customProviders: (config.customProviders || []).filter(cp => cp.id !== cpId),
+        profiles: (config.profiles || []).filter(p => p.provider !== cpId),
+    }
+    delete updated.providerConfigs[cpId]
+    if (updated.activeProvider === cpId) {
+        updated.activeProvider = 'gemini'
+        updated.activeProfileId = null
+    }
+    setConfig(updated)
+    return updated
+}
+
+export function renameCustomProvider(config, cpId, newLabel) {
+    const updated = {
+        ...config,
+        customProviders: (config.customProviders || []).map(cp =>
+            cp.id === cpId ? { ...cp, label: newLabel } : cp
+        ),
+    }
+    setConfig(updated)
+    return updated
+}
+
 // ═══ Profile management ═══
 export function createProfile(config, name) {
     const pc = getActiveProviderConfig(config)
     const profile = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        id: genId(),
         name,
         provider: config.activeProvider,
         model: pc.model,
@@ -214,16 +311,13 @@ export function buildMessages(userMessage, context = {}) {
     const config = getConfig()
     const messages = []
 
-    // System prompt
     let systemContent = config.systemPrompt || DEFAULT_SYSTEM_PROMPT
 
-    // Roleplay mode
     if (config.roleplayMode && config.roleplayCharacter) {
         systemContent = ROLEPLAY_SYSTEM_PROMPT +
             `\n\n你現在扮演的角色：\n${config.roleplayCharacter}`
     }
 
-    // Inject context
     if (context.currentText) {
         systemContent += `\n\n---\n【目前編輯中的文件內容】\n${context.currentText.slice(0, 3000)}`
     }
@@ -233,7 +327,6 @@ export function buildMessages(userMessage, context = {}) {
 
     messages.push({ role: 'system', content: systemContent })
 
-    // Conversation history
     if (context.history) {
         messages.push(...context.history)
     }

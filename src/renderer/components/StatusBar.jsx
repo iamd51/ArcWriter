@@ -1,9 +1,9 @@
-import { Sparkles, BookOpen, Clapperboard, Check, Loader2 } from 'lucide-react'
+import { Sparkles, BookOpen, Clapperboard, Check, Loader2, Maximize2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppState, useAppActions } from '../store/useAppStore'
 import '../styles/statusbar.css'
 
-export default function StatusBar() {
+export default function StatusBar({ onFocusMode }) {
     const { activeFilePath, openFiles } = useAppState()
     const { setActivePanel } = useAppActions()
     const activeFile = openFiles.find(f => f.path === activeFilePath)
@@ -88,6 +88,10 @@ export default function StatusBar() {
             </div>
 
             <div className="statusbar__right">
+                <button className="statusbar__ai-btn" onClick={onFocusMode} title="專注模式 (F11)">
+                    <Maximize2 size={12} />
+                    <span>專注</span>
+                </button>
                 <button className="statusbar__ai-btn" onClick={() => setActivePanel('ai')}>
                     <Sparkles size={12} />
                     <span>AI 速寫</span>

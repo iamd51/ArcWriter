@@ -2,12 +2,14 @@ import { useState, useCallback } from 'react'
 import {
     Key, Globe, Cpu, Thermometer, Hash, MessageSquare,
     CheckCircle2, XCircle, Loader2, RefreshCw, Theater,
-    Plus, Trash2, Save, Star,
+    Plus, Trash2, Save, Star, X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-    getConfig, setConfig, testConnection, PROVIDERS, DEFAULT_SYSTEM_PROMPT,
-    getActiveProviderConfig, createProfile, deleteProfile, applyProfile,
+    getConfig, setConfig, testConnection, BUILTIN_PROVIDERS, DEFAULT_SYSTEM_PROMPT,
+    getActiveProviderConfig, getAllProviders,
+    createProfile, deleteProfile, applyProfile,
+    addCustomProvider, removeCustomProvider,
 } from '../services/aiService'
 import '../styles/settings.css'
 
@@ -19,13 +21,16 @@ export default function SettingsPanel() {
     const [newProfileName, setNewProfileName] = useState('')
     const [showAddModel, setShowAddModel] = useState(false)
     const [showAddProfile, setShowAddProfile] = useState(false)
+    const [showAddEndpoint, setShowAddEndpoint] = useState(false)
+    const [newEndpointLabel, setNewEndpointLabel] = useState('')
+    const [newEndpointUrl, setNewEndpointUrl] = useState('')
 
     const persist = useCallback((updated) => {
         setConfig(updated)
         setLocalConfig(updated)
     }, [])
 
-    // ─── Provider switching (keeps per-provider data intact) ───
+    // ─── Provider switching ───
     const handleProviderChange = useCallback((provider) => {
         const updated = { ...config, activeProvider: provider, activeProfileId: null }
         persist(updated)
@@ -45,6 +50,12 @@ export default function SettingsPanel() {
                 },
             },
         }
+        // Also update endpoint in customProviders list
+        if (field === 'endpoint') {
+            updated.customProviders = (updated.customProviders || []).map(cp =>
+                cp.id === pid ? { ...cp, endpoint: value } : cp
+            )
+        }
         persist(updated)
     }, [config, persist])
 
@@ -52,6 +63,26 @@ export default function SettingsPanel() {
     const updateShared = useCallback((changes) => {
         persist({ ...config, ...changes })
     }, [config, persist])
+
+    // ─── Add custom endpoint ───
+    const handleAddEndpoint = useCallback(() => {
+        const label = newEndpointLabel.trim()
+        if (!label) return
+        const url = newEndpointUrl.trim()
+        const updated = addCustomProvider(config, label, url)
+        setLocalConfig(updated)
+        setNewEndpointLabel('')
+        setNewEndpointUrl('')
+        setShowAddEndpoint(false)
+        setTestResult(null)
+    }, [config, newEndpointLabel, newEndpointUrl])
+
+    // ─── Remove custom endpoint ───
+    const handleRemoveEndpoint = useCallback((cpId) => {
+        const updated = removeCustomProvider(config, cpId)
+        setLocalConfig(updated)
+        setTestResult(null)
+    }, [config])
 
     // ─── Custom model management ───
     const handleAddModel = useCallback(() => {
@@ -81,6 +112,8 @@ export default function SettingsPanel() {
         const pid = config.activeProvider
         const pc = config.providerConfigs[pid]
         const customs = (pc.customModels || []).filter(m => m !== modelName)
+        const allProviders = getAllProviders(config)
+        const presetModels = allProviders[pid]?.models || []
         const updated = {
             ...config,
             providerConfigs: {
@@ -88,7 +121,7 @@ export default function SettingsPanel() {
                 [pid]: {
                     ...pc,
                     customModels: customs,
-                    model: pc.model === modelName ? (PROVIDERS[pid]?.defaultModel || customs[0] || '') : pc.model,
+                    model: pc.model === modelName ? (presetModels[0] || customs[0] || '') : pc.model,
                 },
             },
         }
@@ -128,11 +161,14 @@ export default function SettingsPanel() {
     // ─── Derived ───
     const pid = config.activeProvider
     const pc = getActiveProviderConfig(config)
-    const providerPreset = PROVIDERS[pid] || PROVIDERS.custom
-    const presetModels = providerPreset.models || []
+    const allProviders = getAllProviders(config)
+    const providerInfo = allProviders[pid] || { label: '?', models: [], builtin: false }
+    const presetModels = providerInfo.models || []
     const customModels = pc.customModels || []
     const allModels = [...presetModels, ...customModels]
     const profiles = config.profiles || []
+    const customProviders = config.customProviders || []
+    const isCustom = !providerInfo.builtin
 
     return (
         <div className="settings-panel">
@@ -157,7 +193,7 @@ export default function SettingsPanel() {
                                     <button
                                         className="settings-panel__profile-name"
                                         onClick={() => handleApplyProfile(p.id)}
-                                        title={`${PROVIDERS[p.provider]?.label || p.provider} / ${p.model}`}
+                                        title={`${allProviders[p.provider]?.label || p.provider} / ${p.model}`}
                                     >
                                         <span className="settings-panel__profile-dot" />
                                         {p.name}
@@ -175,14 +211,15 @@ export default function SettingsPanel() {
                     </div>
                 )}
 
-                {/* ═══ Provider ═══ */}
+                {/* ═══ Providers ═══ */}
                 <div className="settings-panel__group">
                     <label className="settings-panel__label">
                         <Globe size={12} />
                         API 提供者
                     </label>
+                    {/* Built-in */}
                     <div className="settings-panel__provider-grid">
-                        {Object.entries(PROVIDERS).map(([key, p]) => (
+                        {Object.entries(BUILTIN_PROVIDERS).map(([key, p]) => (
                             <button
                                 key={key}
                                 className={`settings-panel__provider-btn ${pid === key ? 'settings-panel__provider-btn--active' : ''}`}
@@ -192,6 +229,74 @@ export default function SettingsPanel() {
                             </button>
                         ))}
                     </div>
+                    {/* Custom endpoints */}
+                    {customProviders.length > 0 && (
+                        <div className="settings-panel__custom-providers">
+                            {customProviders.map(cp => (
+                                <div
+                                    key={cp.id}
+                                    className={`settings-panel__custom-provider ${pid === cp.id ? 'settings-panel__custom-provider--active' : ''}`}
+                                >
+                                    <button
+                                        className="settings-panel__custom-provider-name"
+                                        onClick={() => handleProviderChange(cp.id)}
+                                    >
+                                        <Globe size={11} />
+                                        {cp.label}
+                                    </button>
+                                    <button
+                                        className="settings-panel__custom-provider-del"
+                                        onClick={() => handleRemoveEndpoint(cp.id)}
+                                        title="移除此端點"
+                                    >
+                                        <X size={10} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {/* Add new endpoint */}
+                    {!showAddEndpoint ? (
+                        <button
+                            className="settings-panel__add-endpoint-btn"
+                            onClick={() => setShowAddEndpoint(true)}
+                        >
+                            <Plus size={11} /> 新增自訂端點
+                        </button>
+                    ) : (
+                        <motion.div
+                            className="settings-panel__add-endpoint"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            transition={{ duration: 0.15 }}
+                        >
+                            <input
+                                className="settings-panel__input"
+                                value={newEndpointLabel}
+                                onChange={(e) => setNewEndpointLabel(e.target.value)}
+                                placeholder="名稱（如：DeepSeek、Claude…）"
+                                autoFocus
+                            />
+                            <input
+                                className="settings-panel__input"
+                                value={newEndpointUrl}
+                                onChange={(e) => setNewEndpointUrl(e.target.value)}
+                                placeholder="端點 URL（如：https://api.deepseek.com/v1）"
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddEndpoint()}
+                            />
+                            <div className="settings-panel__add-row">
+                                <button className="settings-panel__add-btn" onClick={handleAddEndpoint}>
+                                    <Plus size={12} /> 新增
+                                </button>
+                                <button
+                                    className="settings-panel__cancel-btn"
+                                    onClick={() => { setShowAddEndpoint(false); setNewEndpointLabel(''); setNewEndpointUrl('') }}
+                                >
+                                    取消
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
                 </div>
 
                 {/* ═══ API Key (per provider) ═══ */}
@@ -205,12 +310,12 @@ export default function SettingsPanel() {
                         className="settings-panel__input"
                         value={pc.apiKey}
                         onChange={(e) => updateProviderField('apiKey', e.target.value)}
-                        placeholder={`輸入 ${providerPreset.label} 的 API Key…`}
+                        placeholder={`輸入 ${providerInfo.label} 的 API Key…`}
                     />
                 </div>
 
-                {/* ═══ Endpoint (custom + editable for others) ═══ */}
-                {pid === 'custom' && (
+                {/* ═══ Endpoint (editable for custom) ═══ */}
+                {isCustom && (
                     <div className="settings-panel__group">
                         <label className="settings-panel__label">
                             <Globe size={12} />
@@ -242,7 +347,7 @@ export default function SettingsPanel() {
                     {allModels.length > 0 ? (
                         <div className="settings-panel__model-list">
                             {allModels.map(m => {
-                                const isCustom = customModels.includes(m)
+                                const isUserAdded = customModels.includes(m)
                                 return (
                                     <div
                                         key={m}
@@ -254,9 +359,9 @@ export default function SettingsPanel() {
                                         >
                                             <span className="settings-panel__model-dot" />
                                             <span className="settings-panel__model-name">{m}</span>
-                                            {isCustom && <span className="settings-panel__model-tag">自訂</span>}
+                                            {isUserAdded && <span className="settings-panel__model-tag">自訂</span>}
                                         </button>
-                                        {isCustom && (
+                                        {isUserAdded && (
                                             <button
                                                 className="settings-panel__model-del"
                                                 onClick={() => handleDeleteModel(m)}
@@ -278,7 +383,6 @@ export default function SettingsPanel() {
                         />
                     )}
 
-                    {/* Add model inline */}
                     <AnimatePresence>
                         {showAddModel && (
                             <motion.div

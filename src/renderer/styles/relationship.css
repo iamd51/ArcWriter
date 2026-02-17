@@ -1,0 +1,189 @@
+/* ═══ Relationship Graph ═══ */
+
+.relgraph {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.relgraph__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+}
+
+.relgraph__empty p {
+    margin: 0;
+}
+
+.relgraph__empty-hint {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+/* ── Header ── */
+
+.relgraph__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 14px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.relgraph__title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin: 0;
+    flex: 1;
+}
+
+.relgraph__add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.relgraph__add-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(201, 86, 60, 0.08);
+}
+
+/* ── Add Relationship Form ── */
+
+.relgraph__add-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.relgraph__select,
+.relgraph__input {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-input, var(--bg-secondary));
+    color: var(--text-primary);
+    font-size: 11px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.relgraph__select:focus,
+.relgraph__input:focus {
+    border-color: var(--accent);
+}
+
+.relgraph__confirm-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.relgraph__confirm-btn:hover {
+    opacity: 0.9;
+}
+
+.relgraph__confirm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── SVG Canvas ── */
+
+.relgraph__canvas {
+    flex: 1;
+    overflow: hidden;
+    min-height: 200px;
+}
+
+.relgraph__canvas svg {
+    display: block;
+}
+
+.relgraph__edge-group line {
+    transition: stroke-opacity 0.2s;
+}
+
+.relgraph__edge-label {
+    pointer-events: none;
+    font-family: var(--font-ui, sans-serif);
+}
+
+.relgraph__edge-delete-zone {
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.relgraph__edge-group:hover .relgraph__edge-delete-zone {
+    opacity: 1;
+    fill: rgba(220, 80, 80, 0.15);
+}
+
+.relgraph__node-group circle {
+    transition: r 0.2s, stroke-width 0.2s;
+}
+
+.relgraph__node-group text {
+    pointer-events: none;
+    font-family: var(--font-ui, sans-serif);
+    user-select: none;
+}
+
+/* ── Legend ── */
+
+.relgraph__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 14px 12px;
+    border-top: 1px solid var(--border);
+}
+
+.relgraph__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+.relgraph__legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}

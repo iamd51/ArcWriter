@@ -24,6 +24,7 @@ export default function ScreenplayRow({
     onSelect,
     onNavigate,
     onContextMenu,
+    onPaste,
 }) {
     const cellRefs = useRef({})
     const composingRef = useRef(false)
@@ -45,6 +46,56 @@ export default function ScreenplayRow({
         const value = e.target.innerHTML
         onCellChange(sceneIndex, rowIndex, colKey, value)
     }, [sceneIndex, rowIndex, onCellChange])
+
+    // ── Paste handler: parse TSV from Excel/spreadsheets ──
+    const handlePaste = useCallback((colKey, e) => {
+        const clipboardData = e.clipboardData
+        if (!clipboardData) return
+
+        const plain = clipboardData.getData('text/plain') || ''
+
+        // Only intercept if content has tabs (typical of Excel/spreadsheet copy)
+        if (!plain.includes('\t')) return // let default paste handle normal text
+
+        e.preventDefault()
+        e.stopPropagation()
+
+        // Parse TSV: split by newlines, then by tabs
+        const lines = plain.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+            .filter(line => line.trim() !== '')
+
+        if (lines.length === 0) return
+
+        // Find starting column index
+        const colStartIdx = COLUMNS.findIndex(c => c.key === colKey)
+        if (colStartIdx === -1) return
+
+        // Build row data from parsed lines
+        const parsedRows = lines.map(line => {
+            const cells = line.split('\t')
+            const rowData = {}
+            cells.forEach((cellText, i) => {
+                const targetColIdx = colStartIdx + i
+                if (targetColIdx < COLUMNS.length) {
+                    rowData[COLUMNS[targetColIdx].key] = cellText.trim()
+                }
+            })
+            return rowData
+        })
+
+        // Delegate to parent for multi-row paste handling
+        if (onPaste) {
+            onPaste(sceneIndex, rowIndex, parsedRows)
+        } else {
+            // Fallback: just fill the first row into this cell's row
+            const firstRow = parsedRows[0]
+            if (firstRow) {
+                Object.entries(firstRow).forEach(([key, val]) => {
+                    onCellChange(sceneIndex, rowIndex, key, val)
+                })
+            }
+        }
+    }, [sceneIndex, rowIndex, onCellChange, onPaste])
 
     const handleKeyDown = useCallback((colKey, e) => {
         // Skip all navigation during IME composition
@@ -170,8 +221,10 @@ export default function ScreenplayRow({
         >
             {/* Scene number column */}
             <div className="screenplay-cell screenplay-cell--scene">
-                {isSceneHeader && (
+                {isSceneHeader ? (
                     <span className="screenplay-cell__scene-num">{sceneNumber}</span>
+                ) : (
+                    <span className="screenplay-cell__row-num">{rowIndex + 1}</span>
                 )}
                 <GripVertical size={12} className="screenplay-cell__grip" />
             </div>
@@ -193,6 +246,7 @@ export default function ScreenplayRow({
                             data-placeholder={col.placeholder}
                             onInput={(e) => handleInput(col.key, e)}
                             onKeyDown={(e) => handleKeyDown(col.key, e)}
+                            onPaste={(e) => handlePaste(col.key, e)}
                             onCompositionStart={handleCompositionStart}
                             onCompositionEnd={(e) => handleCompositionEnd(col.key, e)}
                             onFocus={() => handleFocus(col.key)}

@@ -4,7 +4,7 @@ import {
     Check, X, Loader2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { streamChat, buildMessages, buildBibleContext, getConfig } from '../services/aiService'
+import { streamChat, buildMessages, buildBibleContext, getConfig, getActiveApiKey } from '../services/aiService'
 import { useAppState } from '../store/useAppStore'
 import '../styles/inlineai.css'
 
@@ -102,7 +102,7 @@ export default function InlineAI({ editor }) {
         setResult('')
 
         const config = getConfig()
-        if (!config.apiKey) {
+        if (!getActiveApiKey(config)) {
             setResult('⚠️ 尚未設定 API Key')
             setStreaming(false)
             return

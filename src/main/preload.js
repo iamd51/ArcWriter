@@ -26,4 +26,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Story Bible
     readBible: (projectPath) => ipcRenderer.invoke('read-bible', projectPath),
     writeBible: (projectPath, data) => ipcRenderer.invoke('write-bible', projectPath, data),
+
+    // Snapshots (Version History)
+    createSnapshot: (projectPath, filePath, label) => ipcRenderer.invoke('create-snapshot', projectPath, filePath, label),
+    listSnapshots: (projectPath, filePath) => ipcRenderer.invoke('list-snapshots', projectPath, filePath),
+    readSnapshot: (snapshotPath) => ipcRenderer.invoke('read-snapshot', snapshotPath),
+    deleteSnapshot: (snapshotPath) => ipcRenderer.invoke('delete-snapshot', snapshotPath),
+
+    // Export
+    exportPDF: (html, savePath, options) => ipcRenderer.invoke('export-pdf', html, savePath, options),
+    showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
 })

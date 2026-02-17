@@ -5,7 +5,11 @@ import FileTree from './FileTree'
 import SearchPanel from './SearchPanel'
 import StoryBiblePanel from './StoryBiblePanel'
 import AIPanel from './AIPanel'
+import SnapshotPanel from './SnapshotPanel'
 import SettingsPanel from './SettingsPanel'
+import DashboardPanel from './DashboardPanel'
+import OutlinePanel from './OutlinePanel'
+import RelationshipGraph from './RelationshipGraph'
 import '../styles/sidebar.css'
 
 export default function Sidebar() {
@@ -64,8 +68,24 @@ export default function Sidebar() {
                                 <AIPanel />
                             )}
 
+                            {activePanel === 'history' && (
+                                <SnapshotPanel />
+                            )}
+
                             {activePanel === 'settings' && (
                                 <SettingsPanel />
+                            )}
+
+                            {activePanel === 'dashboard' && (
+                                <DashboardPanel />
+                            )}
+
+                            {activePanel === 'outline' && (
+                                <OutlinePanel />
+                            )}
+
+                            {activePanel === 'relationships' && (
+                                <RelationshipGraph />
                             )}
                         </div>
                     </div>

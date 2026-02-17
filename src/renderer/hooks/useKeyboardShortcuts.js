@@ -19,6 +19,8 @@ export default function useKeyboardShortcuts({
     onCrossFileSearch,
     onCommandPalette,
     onToggleSidebar,
+    onFocusMode,
+    onExport,
 }) {
     useEffect(() => {
         const handler = (e) => {
@@ -97,10 +99,24 @@ export default function useKeyboardShortcuts({
                 onToggleSidebar?.()
                 return
             }
+
+            // F11 - focus mode
+            if (e.key === 'F11') {
+                e.preventDefault()
+                onFocusMode?.()
+                return
+            }
+
+            // Ctrl+E - export
+            if (ctrl && e.key === 'e') {
+                e.preventDefault()
+                onExport?.()
+                return
+            }
         }
 
         window.addEventListener('keydown', handler)
         return () => window.removeEventListener('keydown', handler)
     }, [onNewFile, onSave, onSaveAs, onCloseTab, onNextTab, onPrevTab,
-        onFind, onReplace, onCrossFileSearch, onCommandPalette, onToggleSidebar])
+        onFind, onReplace, onCrossFileSearch, onCommandPalette, onToggleSidebar, onFocusMode, onExport])
 }
