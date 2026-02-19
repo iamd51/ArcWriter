@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "package": "vite build && npx @electron/packager . ArcWriter --platform=win32 --arch=x64 --out=release --icon=icon.ico --overwrite --asar"
+    "package": "vite build && npx @electron/packager . ArcWriter --platform=win32 --arch=x64 --out=release --icon=icon.ico --overwrite --asar",
+    "build:win": "vite build && electron-builder --win portable"
   },
   "build": {
     "appId": "com.arcwriter.app",
