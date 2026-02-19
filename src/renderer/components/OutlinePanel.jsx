@@ -75,9 +75,11 @@ function parseNovelOutline(content) {
 // ── Parse screenplay outline ──
 function parseScreenplayOutline(content) {
     const data = parseScreenplayJSON(content)
-    if (!data?.scenes) return []
+    if (!data) return []
+    const allScenes = data.pages ? data.pages.flatMap(p => p.scenes) : data.scenes || []
+    if (allScenes.length === 0) return []
 
-    return data.scenes.map((scene, idx) => {
+    return allScenes.map((scene, idx) => {
         const firstHeading = scene.rows?.find(r => r.heading)
         const dialogueCount = scene.rows?.filter(r => r.dialogue).length || 0
         const charSet = new Set()

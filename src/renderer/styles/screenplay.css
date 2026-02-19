@@ -336,6 +336,23 @@
     background: var(--border-medium);
 }
 
+/* When context menu opens upward (e.g. from bottom tab bar) */
+.screenplay-context-menu--above {
+    animation: contextMenuInAbove 0.12s var(--ease-out-expo);
+}
+
+@keyframes contextMenuInAbove {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
 /* ─── Toolbar Extensions ─── */
 
 .toolbar__btn--destructive {
@@ -374,4 +391,202 @@
 /* Horizontal scroll for wide tables */
 .screenplay-wrapper {
     overflow-x: auto;
+}
+
+/* ─── Search Hit Highlight ─── */
+
+.screenplay-cell--search-hit {
+    animation: search-hit-flash 1.5s ease;
+}
+
+.screenplay-cell--search-hit .screenplay-cell__input {
+    outline: 2px solid var(--cinnabar, #c9563c) !important;
+    outline-offset: -1px;
+    border-radius: 3px;
+    background: rgba(201, 86, 60, 0.08) !important;
+}
+
+@keyframes search-hit-flash {
+    0% {
+        background: rgba(201, 86, 60, 0.15);
+    }
+
+    100% {
+        background: transparent;
+    }
+}
+
+/* ─── Bottom Tab Bar ─── */
+
+.screenplay-tabbar {
+    display: flex;
+    align-items: stretch;
+    border-top: 1px solid rgba(0, 0, 0, 0.25);
+    background: #2c2520;
+    flex-shrink: 0;
+    min-height: 36px;
+    overflow: hidden;
+}
+
+.screenplay-tabbar__tabs {
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    flex: 1;
+    gap: 0;
+    scrollbar-width: none;
+}
+
+.screenplay-tabbar__tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.screenplay-tabbar__tab {
+    display: flex;
+    align-items: center;
+    padding: 7px 18px;
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    color: #b8a99a;
+    cursor: pointer;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    user-select: none;
+    transition: all 0.15s ease;
+    position: relative;
+    background: transparent;
+}
+
+.screenplay-tabbar__tab:hover {
+    color: #ece0d4;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.screenplay-tabbar__tab--active {
+    color: #f5ebe0;
+    background: #3d342d;
+    font-weight: 500;
+}
+
+.screenplay-tabbar__tab--active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--cinnabar, #c9563c);
+    border-radius: 2px 2px 0 0;
+}
+
+.screenplay-tabbar__tab-label {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.screenplay-tabbar__tab-input {
+    width: 80px;
+    height: 20px;
+    padding: 0 4px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--text-primary);
+    background: var(--ink-light, #2a2a2a);
+    border: 1px solid var(--cinnabar, #c9563c);
+    border-radius: 3px;
+    outline: none;
+}
+
+.screenplay-tabbar__add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    min-width: 34px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-left: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+    transition: all 0.15s ease;
+}
+
+.screenplay-tabbar__add:hover {
+    color: var(--cinnabar, #c9563c);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Confirmation Dialog ─── */
+
+.screenplay-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.screenplay-confirm-dialog {
+    background: var(--ink-dark, #1a1a1a);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg, 12px);
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
+.screenplay-confirm-dialog__message {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.screenplay-confirm-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.screenplay-confirm-dialog__cancel,
+.screenplay-confirm-dialog__confirm {
+    padding: 7px 16px;
+    border-radius: var(--radius-sm, 6px);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+}
+
+.screenplay-confirm-dialog__cancel {
+    background: var(--ink-light, #2a2a2a);
+    color: var(--text-secondary);
+}
+
+.screenplay-confirm-dialog__cancel:hover {
+    background: var(--ink-lighter, #333);
+    color: var(--text-primary);
+}
+
+.screenplay-confirm-dialog__confirm {
+    background: #c0392b;
+    color: #fff;
+}
+
+.screenplay-confirm-dialog__confirm:hover {
+    background: #a93226;
+}
+
+/* Context menu destructive item with icon */
+.screenplay-context-menu__destructive {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }

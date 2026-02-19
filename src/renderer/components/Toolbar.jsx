@@ -1,16 +1,45 @@
+import { useState } from 'react'
 import {
     Bold, Italic, Strikethrough, Underline as UnderlineIcon,
     Heading1, Heading2, Heading3,
     List, ListOrdered, Quote, Minus, Code,
     Undo2, Redo2,
     Scissors, Copy, ClipboardPaste,
+    Type, Paintbrush,
 } from 'lucide-react'
+import ColorPicker from './ColorPicker'
 import '../styles/toolbar.css'
+import '../styles/colorpicker.css'
 
 export default function Toolbar({ editor }) {
+    const [showTextColor, setShowTextColor] = useState(false)
+    const [showBgColor, setShowBgColor] = useState(false)
+    const [currentTextColor, setCurrentTextColor] = useState('#c9563c')
+    const [currentBgColor, setCurrentBgColor] = useState('#fde047')
+
     if (!editor) return null
 
     const charCount = editor.storage?.characterCount?.characters?.() ?? 0
+
+    const handleTextColor = (color) => {
+        if (color) {
+            editor.chain().focus().setColor(color).run()
+            setCurrentTextColor(color)
+        } else {
+            editor.chain().focus().unsetColor().run()
+        }
+        setShowTextColor(false)
+    }
+
+    const handleBgColor = (color) => {
+        if (color) {
+            editor.chain().focus().setHighlight({ color }).run()
+            setCurrentBgColor(color)
+        } else {
+            editor.chain().focus().unsetHighlight().run()
+        }
+        setShowBgColor(false)
+    }
 
     const groups = [
         [
@@ -68,6 +97,64 @@ export default function Toolbar({ editor }) {
                                 <Icon size={15} strokeWidth={active ? 2.2 : 1.6} />
                             </button>
                         ))}
+
+                        {/* Insert color buttons after text formatting group (index 2) */}
+                        {gi === 2 && (
+                            <>
+                                {/* Text Color */}
+                                <div className="toolbar__color-wrap">
+                                    <button
+                                        className="toolbar__color-btn"
+                                        onClick={() => {
+                                            setShowTextColor(!showTextColor)
+                                            setShowBgColor(false)
+                                        }}
+                                        title="文字顏色"
+                                    >
+                                        <Type size={14} strokeWidth={1.6} />
+                                        <span
+                                            className="toolbar__color-indicator"
+                                            style={{ background: currentTextColor }}
+                                        />
+                                    </button>
+                                    {showTextColor && (
+                                        <ColorPicker
+                                            mode="text"
+                                            currentColor={currentTextColor}
+                                            onSelect={handleTextColor}
+                                            onClose={() => setShowTextColor(false)}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Background Color */}
+                                <div className="toolbar__color-wrap">
+                                    <button
+                                        className="toolbar__color-btn"
+                                        onClick={() => {
+                                            setShowBgColor(!showBgColor)
+                                            setShowTextColor(false)
+                                        }}
+                                        title="底色"
+                                    >
+                                        <Paintbrush size={14} strokeWidth={1.6} />
+                                        <span
+                                            className="toolbar__color-indicator"
+                                            style={{ background: currentBgColor }}
+                                        />
+                                    </button>
+                                    {showBgColor && (
+                                        <ColorPicker
+                                            mode="background"
+                                            currentColor={currentBgColor}
+                                            onSelect={handleBgColor}
+                                            onClose={() => setShowBgColor(false)}
+                                        />
+                                    )}
+                                </div>
+                            </>
+                        )}
+
                         {gi < groups.length - 1 && <div className="toolbar__separator" />}
                     </div>
                 ))}

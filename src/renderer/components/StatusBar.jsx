@@ -1,4 +1,4 @@
-import { Sparkles, BookOpen, Clapperboard, Check, Loader2, Maximize2 } from 'lucide-react'
+import { Sparkles, BookOpen, Clapperboard, Check, Maximize2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppState, useAppActions } from '../store/useAppStore'
 import '../styles/statusbar.css'

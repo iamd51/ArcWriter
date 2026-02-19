@@ -9,8 +9,9 @@ import '../styles/export.css'
 
 // ─── Generate screenplay HTML for PDF ───
 function generateScreenplayHTML(data, title) {
+    const allScenes = data.pages ? data.pages.flatMap(p => p.scenes) : data.scenes || []
     const rows = []
-    data.scenes.forEach(scene => {
+    allScenes.forEach(scene => {
         scene.rows.forEach((row, ri) => {
             if (row.heading) {
                 rows.push(`<div class="row heading">${esc(row.heading)}</div>`)
@@ -126,8 +127,9 @@ body {
 
 // ─── Generate Fountain format ───
 function generateFountain(data, title) {
+    const allScenes = data.pages ? data.pages.flatMap(p => p.scenes) : data.scenes || []
     const lines = [`Title: ${title}`, '', '===', '']
-    data.scenes.forEach(scene => {
+    allScenes.forEach(scene => {
         scene.rows.forEach(row => {
             if (row.heading) {
                 lines.push(`\n.${row.heading}\n`)
@@ -165,7 +167,7 @@ export default function ExportDialog({ isOpen, onClose }) {
     const fileName = activeFile?.name || activeFilePath?.split(/[\\/]/).pop() || 'untitled'
     const baseName = fileName.replace(/\.[^.]+$/, '')
 
-    const [format, setFormat] = useState(isScreenplay ? 'pdf' : 'pdf')
+    const [format, setFormat] = useState('pdf')
     const [exporting, setExporting] = useState(false)
     const [result, setResult] = useState(null) // { ok, message }
 

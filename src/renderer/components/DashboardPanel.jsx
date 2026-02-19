@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppState, useAppActions } from '../store/useAppStore'
+import WritingHeatmap from './WritingHeatmap'
 import '../styles/dashboard.css'
 
 // ─── Helpers ───
@@ -161,6 +162,15 @@ export default function DashboardPanel() {
                     value={stats?.totalEntries ?? 0}
                     accent="#c9963c"
                 />
+            </div>
+
+            {/* Writing Heatmap */}
+            <div className="dash__section">
+                <div className="dash__section-header">
+                    <TrendingUp size={13} />
+                    <span>寫作熱力圖</span>
+                </div>
+                <WritingHeatmap />
             </div>
 
             {/* Writing Goal */}

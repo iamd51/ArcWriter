@@ -1,19 +1,22 @@
-import { useState, useEffect, useCallback, Component } from 'react'
+import { useState, useEffect, useCallback, useRef, Component } from 'react'
 import { AppProvider, useAppState, useAppActions } from './store/useAppStore'
 import useAutoSave from './hooks/useAutoSave'
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts'
+import { addWords } from './services/writingStatsService'
 import TitleBar from './components/TitleBar'
 import ActivityBar from './components/ActivityBar'
 import Sidebar from './components/Sidebar'
 import TabBar from './components/TabBar'
 import Editor from './components/Editor'
 import EntryEditor from './components/EntryEditor'
+import SplitViewer from './components/SplitViewer'
 import StatusBar from './components/StatusBar'
 import WelcomeScreen from './components/WelcomeScreen'
 import CreateFileDialog from './components/CreateFileDialog'
 import CommandPalette from './components/CommandPalette'
 import FocusMode from './components/FocusMode'
 import ExportDialog from './components/ExportDialog'
+import './styles/splitview.css'
 
 const RECENT_PROJECTS_KEY = 'arcwriter_recent_projects'
 
@@ -82,6 +85,76 @@ function AppLayout() {
     const [focusMode, setFocusMode] = useState(false)
     const [showExport, setShowExport] = useState(false)
     const hasOpenFile = openFiles.length > 0 && activeFilePath
+
+    // ── Split view state ──
+    const [splitFilePath, setSplitFilePath] = useState(null)
+    const [splitSide, setSplitSide] = useState('right') // 'left' or 'right'
+    const [splitRatio, setSplitRatio] = useState(0.5) // 0..1, left pane fraction
+    const splitDragging = useRef(false)
+    const mainRef = useRef(null)
+
+    // Close split if the file gets closed
+    useEffect(() => {
+        if (splitFilePath && !openFiles.find(f => f.path === splitFilePath)) {
+            setSplitFilePath(null)
+        }
+    }, [openFiles, splitFilePath])
+
+    // Draggable divider
+    const handleDividerMouseDown = useCallback((e) => {
+        e.preventDefault()
+        splitDragging.current = true
+        const mainEl = mainRef.current
+        if (!mainEl) return
+        const onMove = (me) => {
+            const rect = mainEl.getBoundingClientRect()
+            const x = me.clientX - rect.left
+            const ratio = Math.min(0.8, Math.max(0.2, x / rect.width))
+            setSplitRatio(ratio)
+        }
+        const onUp = () => {
+            splitDragging.current = false
+            document.removeEventListener('mousemove', onMove)
+            document.removeEventListener('mouseup', onUp)
+            document.body.style.cursor = ''
+            document.body.style.userSelect = ''
+        }
+        document.body.style.cursor = 'col-resize'
+        document.body.style.userSelect = 'none'
+        document.addEventListener('mousemove', onMove)
+        document.addEventListener('mouseup', onUp)
+    }, [])
+
+    const handleSplitRight = useCallback((filePath) => {
+        setSplitFilePath(filePath)
+        setSplitSide('right')
+        setSplitRatio(0.5)
+    }, [])
+
+    const handleSplitLeft = useCallback((filePath) => {
+        setSplitFilePath(filePath)
+        setSplitSide('left')
+        setSplitRatio(0.5)
+    }, [])
+
+    // ── Track writing word count for heatmap ──
+    const prevWordCountRef = useRef(0)
+    useEffect(() => {
+        let total = 0
+        openFiles.forEach(f => {
+            if (!f.content) return
+            const text = typeof f.content === 'string' ? f.content : JSON.stringify(f.content)
+            const clean = text.replace(/<[^>]*>/g, '')
+            const cjk = (clean.match(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g) || []).length
+            const eng = (clean.match(/[a-zA-Z]+/g) || []).length
+            total += cjk + eng
+        })
+        const delta = total - prevWordCountRef.current
+        if (delta > 0 && prevWordCountRef.current > 0) {
+            addWords(delta)
+        }
+        prevWordCountRef.current = total
+    }, [openFiles])
 
     // Track recent projects in localStorage
     useEffect(() => {
@@ -249,13 +322,50 @@ function AppLayout() {
             <div className="app__body">
                 <ActivityBar />
                 <Sidebar />
-                <div className="app__main">
+                <div className={`app__main ${splitFilePath ? 'app__main--split' : ''}`} ref={mainRef}>
                     {selectedEntryId ? (
                         <EntryEditor />
                     ) : hasOpenFile ? (
                         <>
-                            <TabBar />
-                            <Editor />
+                            {/* Split viewer on the LEFT side */}
+                            {splitFilePath && splitSide === 'left' && (
+                                <>
+                                    <SplitViewer
+                                        filePath={splitFilePath}
+                                        onClose={() => setSplitFilePath(null)}
+                                        style={{ flex: `0 0 ${splitRatio * 100}%` }}
+                                    />
+                                    <div
+                                        className={`split-divider ${splitDragging.current ? 'split-divider--dragging' : ''}`}
+                                        onMouseDown={handleDividerMouseDown}
+                                    />
+                                </>
+                            )}
+
+                            {/* Primary editor */}
+                            <div
+                                className="app__editor-pane"
+                                style={splitFilePath && splitSide === 'right'
+                                    ? { flex: `0 0 ${splitRatio * 100}%` }
+                                    : undefined}
+                            >
+                                <TabBar onSplitRight={handleSplitRight} onSplitLeft={handleSplitLeft} />
+                                <Editor />
+                            </div>
+
+                            {/* Split viewer on the RIGHT side */}
+                            {splitFilePath && splitSide === 'right' && (
+                                <>
+                                    <div
+                                        className={`split-divider ${splitDragging.current ? 'split-divider--dragging' : ''}`}
+                                        onMouseDown={handleDividerMouseDown}
+                                    />
+                                    <SplitViewer
+                                        filePath={splitFilePath}
+                                        onClose={() => setSplitFilePath(null)}
+                                    />
+                                </>
+                            )}
                         </>
                     ) : (
                         <WelcomeScreen />

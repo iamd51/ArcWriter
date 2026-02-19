@@ -99,30 +99,52 @@
     line-height: 1.8;
 }
 
+/* ═══ ACTION BUTTONS ═══ */
+.welcome__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
 .welcome__action {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
     padding: 10px 28px;
     border-radius: var(--radius-md);
-    background: linear-gradient(135deg, var(--cinnabar) 0%, var(--cinnabar-deep) 100%);
-    color: var(--text-on-accent);
     font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    box-shadow:
-        0 2px 8px rgba(201, 86, 60, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
     transition: all var(--duration-normal) var(--ease-out-expo);
 }
 
-.welcome__action:hover {
+.welcome__action--primary {
+    background: linear-gradient(135deg, var(--cinnabar) 0%, var(--cinnabar-deep) 100%);
+    color: var(--text-on-accent);
+    box-shadow:
+        0 2px 8px rgba(201, 86, 60, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.welcome__action--primary:hover {
     box-shadow:
         0 4px 20px rgba(201, 86, 60, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.welcome__action--secondary {
+    background: var(--bg-secondary, var(--ink-hover));
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.welcome__action--secondary:hover {
+    background: var(--bg-hover, var(--ink-hover));
+    color: var(--text-primary);
+    border-color: var(--text-tertiary);
 }
 
 .welcome__shortcut {
@@ -206,4 +228,150 @@
 
 .welcome__recent-item:hover .welcome__recent-arrow {
     opacity: 0.7;
+}
+
+/* ═══ CREATE PROJECT DIALOG ═══ */
+.welcome__dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+}
+
+.welcome__dialog {
+    position: relative;
+    width: 380px;
+    padding: 32px 28px 24px;
+    background: var(--bg-primary, var(--ink-deep));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.welcome__dialog-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.welcome__dialog-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.welcome__dialog-icon {
+    color: var(--cinnabar);
+    margin-bottom: 4px;
+}
+
+.welcome__dialog-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.welcome__dialog-desc {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-align: center;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.welcome__dialog-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary, var(--ink-mid));
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-top: 4px;
+}
+
+.welcome__dialog-input:focus {
+    border-color: var(--cinnabar);
+}
+
+.welcome__dialog-input::placeholder {
+    color: var(--text-muted);
+}
+
+.welcome__dialog-error {
+    font-size: 11px;
+    color: #c9563c;
+    margin: 0;
+}
+
+.welcome__dialog-scaffold {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    margin-top: 2px;
+}
+
+.welcome__dialog-scaffold-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.welcome__dialog-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 6px;
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.welcome__dialog-confirm {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--cinnabar) 0%, var(--cinnabar-deep) 100%);
+    color: var(--text-on-accent);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 4px;
+}
+
+.welcome__dialog-confirm:hover {
+    box-shadow: 0 4px 16px rgba(201, 86, 60, 0.3);
+}
+
+.welcome__dialog-confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

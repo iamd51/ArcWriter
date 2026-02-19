@@ -140,7 +140,7 @@ export function AppProvider({ children }) {
 
 export function useAppState() {
     const ctx = useContext(AppContext)
-    if (!ctx && ctx !== initialState) throw new Error('useAppState must be used within AppProvider')
+    if (ctx === null || ctx === undefined) throw new Error('useAppState must be used within AppProvider')
     return ctx
 }
 
@@ -172,10 +172,23 @@ export function useAppActions() {
         'gitignore', 'editorconfig', 'prettierrc',
     ])
 
+    // Binary document formats that ArcWriter can convert & read
+    const BINARY_EXTENSIONS = new Set(['docx', 'xlsx', 'xls', 'pdf'])
+
     const openFile = useCallback(async (filePath, fileName) => {
         const ext = fileName.split('.').pop()?.toLowerCase() || ''
+
+        // Binary document formats — convert via main process
+        if (BINARY_EXTENSIONS.has(ext)) {
+            const result = await window.electronAPI.readBinaryFile(filePath)
+            if (result?.ok) {
+                dispatch({ type: 'OPEN_FILE', payload: { path: filePath, name: fileName, content: result.content } })
+            }
+            return
+        }
+
         if (!TEXT_EXTENSIONS.has(ext)) {
-            // Binary file — skip silently (or could show a toast in the future)
+            // Unsupported file — skip silently
             return
         }
         const content = await window.electronAPI.readFile(filePath)

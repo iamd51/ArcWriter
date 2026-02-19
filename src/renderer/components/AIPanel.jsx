@@ -50,9 +50,10 @@ export default function AIPanel() {
         // Screenplay (.arc) — extract human-readable dialogue/action text
         if (ext === 'arc') {
             const data = parseScreenplayJSON(activeFile.content)
-            if (data?.scenes) {
+            const allScenes = data?.pages ? data.pages.flatMap(p => p.scenes) : data?.scenes || []
+            if (allScenes.length > 0) {
                 const lines = []
-                data.scenes.forEach(scene => {
+                allScenes.forEach(scene => {
                     lines.push(`--- 場景 ${scene.scene} ---`)
                     scene.rows?.forEach(row => {
                         const parts = []
@@ -151,8 +152,9 @@ export default function AIPanel() {
         // Screenplay mode — add AI text as new dialogue row(s)
         if (ext === 'arc') {
             const data = parseScreenplayJSON(activeFile.content)
-            if (data?.scenes && data.scenes.length > 0) {
-                const lastScene = data.scenes[data.scenes.length - 1]
+            const allScenes = data?.pages ? data.pages.flatMap(p => p.scenes) : data?.scenes || []
+            if (allScenes.length > 0) {
+                const lastScene = allScenes[allScenes.length - 1]
                 // Split AI response by lines and create rows
                 const lines = content.split('\n').filter(l => l.trim())
                 lines.forEach(line => {

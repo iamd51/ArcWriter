@@ -4,6 +4,9 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Underline from '@tiptap/extension-underline'
 import CharacterCount from '@tiptap/extension-character-count'
+import TextStyle from '@tiptap/extension-text-style'
+import Color from '@tiptap/extension-color'
+import Highlight from '@tiptap/extension-highlight'
 import { motion } from 'framer-motion'
 import { useAppState, useAppDispatch } from '../store/useAppStore'
 import Toolbar from './Toolbar'
@@ -11,13 +14,14 @@ import SearchBar from './SearchBar'
 import InlineAI from './InlineAI'
 import '../styles/editor.css'
 
-export default function NovelEditor() {
+export default function NovelEditor({ filePath: overrideFilePath }) {
     const { activeFilePath, openFiles } = useAppState()
     const dispatch = useAppDispatch()
+    const filePath = overrideFilePath || activeFilePath
     const [showSearch, setShowSearch] = useState(false)
     const [showReplace, setShowReplace] = useState(false)
 
-    const activeFile = openFiles.find(f => f.path === activeFilePath)
+    const activeFile = openFiles.find(f => f.path === filePath)
 
     const editor = useEditor({
         extensions: [
@@ -29,13 +33,16 @@ export default function NovelEditor() {
             }),
             Underline,
             CharacterCount,
+            TextStyle,
+            Color,
+            Highlight.configure({ multicolor: true }),
         ],
         content: '',
         onUpdate: ({ editor }) => {
-            if (activeFilePath) {
+            if (filePath) {
                 dispatch({
                     type: 'UPDATE_FILE_CONTENT',
-                    payload: { path: activeFilePath, content: editor.getHTML() },
+                    payload: { path: filePath, content: editor.getHTML() },
                 })
             }
         },
@@ -54,18 +61,18 @@ export default function NovelEditor() {
                 editor.commands.setContent(activeFile.content || '')
             }
         }
-    }, [activeFilePath]) // eslint-disable-line
+    }, [filePath]) // eslint-disable-line
 
     // Keyboard shortcut: Ctrl+S save
     const handleSave = useCallback(async () => {
-        if (activeFilePath && activeFile) {
+        if (filePath && activeFile) {
             const content = editor?.getHTML() || ''
-            const ok = await window.electronAPI.writeFile(activeFilePath, content)
+            const ok = await window.electronAPI.writeFile(filePath, content)
             if (ok) {
-                dispatch({ type: 'MARK_FILE_SAVED', payload: activeFilePath })
+                dispatch({ type: 'MARK_FILE_SAVED', payload: filePath })
             }
         }
-    }, [activeFilePath, activeFile, editor, dispatch])
+    }, [filePath, activeFile, editor, dispatch])
 
     useEffect(() => {
         const handler = (e) => {

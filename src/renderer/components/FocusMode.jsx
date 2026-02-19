@@ -20,9 +20,10 @@ function getPlainText(content) {
     if (!content) return ''
     try {
         const data = typeof content === 'string' ? JSON.parse(content) : content
-        if (data.format === 'screenplay' && data.scenes) {
+        if (data.format === 'screenplay' && (data.scenes || data.pages)) {
+            const allScenes = data.pages ? data.pages.flatMap(p => p.scenes || []) : data.scenes
             const lines = []
-            data.scenes.forEach(scene => {
+            allScenes.forEach(scene => {
                 scene.rows?.forEach(row => {
                     const parts = []
                     if (row.heading) parts.push(`[${row.heading}]`)

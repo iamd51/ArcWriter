@@ -1,6 +1,8 @@
 import { ipcMain, dialog, shell } from 'electron'
 import fs from 'fs'
 import path from 'path'
+import mammoth from 'mammoth'
+import * as XLSX from 'xlsx'
 
 const BIBLE_FILENAME = '.arcbible'
 
@@ -48,6 +50,40 @@ export function setupFileHandlers(mainWindow) {
         return { path: dirPath, name: path.basename(dirPath), tree }
     })
 
+    ipcMain.handle('create-project', async (_event, projectName) => {
+        // Let user pick where to create the project folder
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openDirectory'],
+            title: '選擇專案存放位置',
+        })
+        if (result.canceled) return null
+
+        const parentDir = result.filePaths[0]
+        const projectDir = path.join(parentDir, projectName)
+
+        // Check if folder already exists
+        if (fs.existsSync(projectDir)) {
+            return { error: '此位置已存在同名資料夾' }
+        }
+
+        try {
+            // Create project root and subdirectories
+            fs.mkdirSync(projectDir, { recursive: true })
+            fs.mkdirSync(path.join(projectDir, '小說'), { recursive: true })
+            fs.mkdirSync(path.join(projectDir, '劇本'), { recursive: true })
+            fs.mkdirSync(path.join(projectDir, '筆記'), { recursive: true })
+
+            // Create a welcome README
+            const readme = `# ${projectName}\n\n歡迎來到你的創作旅程。\n\n## 資料夾結構\n\n- **小說/** — 小說及散文作品\n- **劇本/** — 劇本檔案 (.arc)\n- **筆記/** — 靈感、筆記、大綱\n\n> 在 ArcWriter 中開始你的故事吧！\n`
+            fs.writeFileSync(path.join(projectDir, 'README.md'), readme, 'utf-8')
+
+            const tree = readDirectoryRecursive(projectDir)
+            return { path: projectDir, name: projectName, tree }
+        } catch (e) {
+            return { error: e.message }
+        }
+    })
+
     ipcMain.handle('read-directory', async (_event, dirPath) => {
         return readDirectoryRecursive(dirPath)
     })
@@ -57,6 +93,50 @@ export function setupFileHandlers(mainWindow) {
             return fs.readFileSync(filePath, 'utf-8')
         } catch {
             return null
+        }
+    })
+
+    // ── Read binary document formats (docx / xlsx / pdf) ──
+    ipcMain.handle('read-binary-file', async (_event, filePath) => {
+        const ext = path.extname(filePath).toLowerCase()
+        try {
+            if (ext === '.docx') {
+                const buffer = fs.readFileSync(filePath)
+                const result = await mammoth.convertToHtml({ buffer })
+                return { ok: true, content: result.value, format: 'html' }
+            }
+
+            if (ext === '.xlsx' || ext === '.xls') {
+                const buffer = fs.readFileSync(filePath)
+                const workbook = XLSX.read(buffer, { type: 'buffer' })
+                // Convert each sheet to an HTML table
+                const sheets = workbook.SheetNames.map(name => {
+                    const sheet = workbook.Sheets[name]
+                    const html = XLSX.utils.sheet_to_html(sheet, { id: `sheet-${name}` })
+                    return `<h2>${name}</h2>\n${html}`
+                })
+                return { ok: true, content: sheets.join('\n<hr/>\n'), format: 'html' }
+            }
+
+            if (ext === '.pdf') {
+                // Dynamic import for pdf-parse (CommonJS module)
+                const pdfParse = (await import('pdf-parse')).default
+                const buffer = fs.readFileSync(filePath)
+                const data = await pdfParse(buffer)
+                // Convert text to paragraphs
+                const html = data.text
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0)
+                    .map(line => `<p>${line}</p>`)
+                    .join('\n')
+                return { ok: true, content: html, format: 'html', pages: data.numpages }
+            }
+
+            return { ok: false, error: `不支援的檔案格式: ${ext}` }
+        } catch (e) {
+            console.error('[read-binary-file] Error:', e)
+            return { ok: false, error: e.message }
         }
     })
 

@@ -91,3 +91,60 @@
     background: var(--ink-hover);
     color: var(--text-primary);
 }
+
+/* ── Tab context menu ── */
+.tabbar-ctx-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+}
+
+.tabbar-ctx-menu {
+    position: fixed;
+    z-index: 1000;
+    background: var(--ink-dark, #1a1a1a);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md, 6px);
+    padding: 4px 0;
+    min-width: 180px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: tabCtxIn 0.12s ease-out;
+}
+
+@keyframes tabCtxIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.tabbar-ctx-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 14px;
+    text-align: left;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #e8e0d4);
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.tabbar-ctx-menu button:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.tabbar-ctx-divider {
+    height: 1px;
+    margin: 4px 8px;
+    background: rgba(255, 255, 255, 0.08);
+}

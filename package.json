@@ -2,27 +2,57 @@
   "name": "arcwriter",
   "version": "0.1.0",
   "description": "ArcWriter — 劇本作家的寫作工坊",
+  "author": "ArcWriter",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "package": "vite build && npx @electron/packager . ArcWriter --platform=win32 --arch=x64 --out=release --icon=icon.ico --overwrite --asar"
+  },
+  "build": {
+    "appId": "com.arcwriter.app",
+    "productName": "ArcWriter",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "icon.ico",
+      "forceCodeSigning": false
+    },
+    "portable": {
+      "artifactName": "ArcWriter-${version}-portable.exe"
+    }
   },
   "dependencies": {
     "@tiptap/extension-character-count": "^2.11.0",
+    "@tiptap/extension-color": "^2.27.2",
+    "@tiptap/extension-highlight": "^2.27.2",
     "@tiptap/extension-placeholder": "^2.11.0",
     "@tiptap/extension-underline": "^2.11.0",
     "@tiptap/react": "^2.11.0",
     "@tiptap/starter-kit": "^2.11.0",
     "framer-motion": "^12.0.0",
     "lucide-react": "^0.469.0",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^2.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@electron/packager": "^19.0.5",
     "@vitejs/plugin-react": "^4.3.0",
     "electron": "^34.0.0",
+    "electron-builder": "^26.8.1",
     "vite": "^6.1.0",
     "vite-plugin-electron": "^0.28.0",
     "vite-plugin-electron-renderer": "^0.14.0"
