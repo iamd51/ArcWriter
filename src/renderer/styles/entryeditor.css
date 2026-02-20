@@ -67,6 +67,273 @@
     justify-content: center;
     background: var(--ink-mid);
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.entry-editor__avatar--clickable {
+    cursor: pointer;
+}
+
+.entry-editor__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.entry-editor__avatar-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--text-primary);
+    opacity: 0;
+    transition: opacity var(--duration-fast) ease;
+}
+
+.entry-editor__avatar--clickable:hover .entry-editor__avatar-overlay {
+    opacity: 1;
+}
+
+/* ─── Image Grid ─── */
+.entry-editor__image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.entry-editor__image-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+}
+
+.entry-editor__image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.entry-editor__image-del {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: rgba(0, 0, 0, 0.65);
+    color: #e85353;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--duration-fast) ease;
+}
+
+.entry-editor__image-item:hover .entry-editor__image-del {
+    opacity: 1;
+}
+
+.entry-editor__image-del:hover {
+    background: rgba(232, 83, 83, 0.5);
+    color: #fff;
+}
+
+.entry-editor__image-add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    aspect-ratio: 1;
+    border: 2px dashed var(--border-medium);
+    background: transparent;
+    color: var(--text-tertiary);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) ease;
+}
+
+.entry-editor__image-add:hover {
+    border-color: var(--cinnabar);
+    color: var(--cinnabar);
+    background: rgba(201, 86, 60, 0.05);
+}
+
+/* ─── Structured Fields ─── */
+.entry-editor__subfield-gear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    margin-left: auto;
+    transition: all var(--duration-fast) ease;
+}
+
+.entry-editor__subfield-gear:hover,
+.entry-editor__subfield-gear--active {
+    color: var(--cinnabar);
+    background: rgba(201, 86, 60, 0.08);
+}
+
+.entry-editor__subfield-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.entry-editor__subfield-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.entry-editor__subfield-label {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: right;
+    padding-right: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.entry-editor__subfield-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border-subtle);
+    background: var(--ink-mid);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color var(--duration-fast) ease;
+}
+
+.entry-editor__subfield-input:focus {
+    border-color: var(--cinnabar);
+}
+
+.entry-editor__subfield-input::placeholder {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+/* Sub-field management panel */
+.entry-editor__subfield-mgr {
+    background: var(--ink-dark);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+}
+
+.entry-editor__subfield-mgr-title {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.entry-editor__subfield-mgr-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.entry-editor__subfield-grip {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    cursor: grab;
+}
+
+.entry-editor__subfield-mgr-input {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid var(--border-subtle);
+    background: var(--ink-mid);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    border-radius: var(--radius-xs);
+    outline: none;
+    transition: border-color var(--duration-fast) ease;
+}
+
+.entry-editor__subfield-mgr-input:focus {
+    border-color: var(--cinnabar);
+}
+
+.entry-editor__subfield-mgr-del {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--duration-fast) ease;
+}
+
+.entry-editor__subfield-mgr-del:hover {
+    color: #e85353;
+    background: rgba(232, 83, 83, 0.1);
+}
+
+.entry-editor__subfield-mgr-add {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    margin-top: 6px;
+    border: 1px dashed var(--border-medium);
+    background: transparent;
+    color: var(--text-tertiary);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    transition: all var(--duration-fast) ease;
+}
+
+.entry-editor__subfield-mgr-add:hover {
+    border-color: var(--cinnabar);
+    color: var(--cinnabar);
+}
+
+/* Legacy string data */
+.entry-editor__subfield-legacy-label {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    color: var(--gold-soft);
+    margin-bottom: 6px;
+    font-style: italic;
 }
 
 .entry-editor__identity-info {

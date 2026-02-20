@@ -28,6 +28,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Story Bible
     readBible: (projectPath) => ipcRenderer.invoke('read-bible', projectPath),
     writeBible: (projectPath, data) => ipcRenderer.invoke('write-bible', projectPath, data),
+    pickBibleImage: (projectPath, entryId) => ipcRenderer.invoke('pick-bible-image', projectPath, entryId),
+    deleteBibleImage: (projectPath, relativePath) => ipcRenderer.invoke('delete-bible-image', projectPath, relativePath),
+    resolveBibleImage: (projectPath, relativePath) => ipcRenderer.invoke('resolve-bible-image', projectPath, relativePath),
 
     // Snapshots (Version History)
     createSnapshot: (projectPath, filePath, label) => ipcRenderer.invoke('create-snapshot', projectPath, filePath, label),

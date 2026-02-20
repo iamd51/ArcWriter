@@ -27,7 +27,7 @@ export function getCategoryIcon(iconName) {
 
 export default function StoryBiblePanel() {
     const { storyBible, selectedEntryId, project, bibleLoaded } = useAppState()
-    const { loadBible, createBibleEntry, selectBibleEntry, deleteBibleEntry, updateBibleCategories } = useAppActions()
+    const { loadBible, createBibleEntry, selectBibleEntry, deleteBibleEntry, updateBibleCategories, setEntryViewMode } = useAppActions()
 
     const [searchQuery, setSearchQuery] = useState('')
     const [collapsed, setCollapsed] = useState({})
@@ -81,8 +81,9 @@ export default function StoryBiblePanel() {
         const entry = await createBibleEntry(catId, '')
         if (entry) {
             selectBibleEntry(entry.id)
+            setEntryViewMode('edit') // New entries go straight to edit mode
         }
-    }, [createBibleEntry, selectBibleEntry])
+    }, [createBibleEntry, selectBibleEntry, setEntryViewMode])
 
     const handleDeleteEntry = useCallback((e, entryId) => {
         e.stopPropagation()
@@ -194,6 +195,10 @@ export default function StoryBiblePanel() {
                                                 className={`bible-panel__entry ${selectedEntryId === entry.id ? 'bible-panel__entry--active' : ''
                                                     }`}
                                                 onClick={() => selectBibleEntry(entry.id)}
+                                                onDoubleClick={() => {
+                                                    selectBibleEntry(entry.id)
+                                                    setEntryViewMode('edit')
+                                                }}
                                             >
                                                 <span
                                                     className="bible-panel__entry-dot"

@@ -25,11 +25,10 @@
       "target": [
         "portable"
       ],
-      "icon": "icon.ico",
       "forceCodeSigning": false
     },
     "portable": {
-      "artifactName": "ArcWriter-${version}-portable.exe"
+      "artifactName": "ArcWriter-Portable.exe"
     }
   },
   "dependencies": {

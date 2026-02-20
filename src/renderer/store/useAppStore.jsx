@@ -19,6 +19,7 @@ const initialState = {
     // Story Bible
     storyBible: null,           // { version, categories, entries }
     selectedEntryId: null,      // currently viewed entry in EntryEditor
+    entryViewMode: null,        // 'view' | 'edit' | null
     bibleLoaded: false,
 
     // UI
@@ -108,10 +109,13 @@ function appReducer(state, action) {
             return { ...state, storyBible: action.payload }
 
         case 'SELECT_BIBLE_ENTRY':
-            return { ...state, selectedEntryId: action.payload }
+            return { ...state, selectedEntryId: action.payload, entryViewMode: action.payload ? 'view' : null }
+
+        case 'SET_ENTRY_VIEW_MODE':
+            return { ...state, entryViewMode: action.payload }
 
         case 'CLEAR_BIBLE':
-            return { ...state, storyBible: null, selectedEntryId: null, bibleLoaded: false }
+            return { ...state, storyBible: null, selectedEntryId: null, entryViewMode: null, bibleLoaded: false }
 
         case 'SET_THEME':
             return { ...state, theme: action.payload }
@@ -313,6 +317,10 @@ export function useAppActions() {
         dispatch({ type: 'SELECT_BIBLE_ENTRY', payload: entryId })
     }, [dispatch])
 
+    const setEntryViewMode = useCallback((mode) => {
+        dispatch({ type: 'SET_ENTRY_VIEW_MODE', payload: mode })
+    }, [dispatch])
+
     const updateBibleCategories = useCallback(async (categories) => {
         const bible = state.storyBible
         if (!bible || !state.project?.path) return
@@ -335,5 +343,6 @@ export function useAppActions() {
         // Bible
         loadBible, saveBible, createBibleEntry, updateBibleEntry,
         deleteBibleEntry, selectBibleEntry, updateBibleCategories,
+        setEntryViewMode,
     }
 }

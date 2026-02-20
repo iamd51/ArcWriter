@@ -9,6 +9,7 @@ import Sidebar from './components/Sidebar'
 import TabBar from './components/TabBar'
 import Editor from './components/Editor'
 import EntryEditor from './components/EntryEditor'
+import EntryViewer from './components/EntryViewer'
 import SplitViewer from './components/SplitViewer'
 import StatusBar from './components/StatusBar'
 import WelcomeScreen from './components/WelcomeScreen'
@@ -69,7 +70,7 @@ class ErrorBoundary extends Component {
 }
 
 function AppLayout() {
-    const { openFiles, activeFilePath, project, selectedEntryId } = useAppState()
+    const { openFiles, activeFilePath, project, selectedEntryId, entryViewMode } = useAppState()
     const {
         openFolder, openFile, closeFile, setActiveFile,
         createFile, toggleSidebar, saveFile, saveFileAs, setActivePanel,
@@ -323,7 +324,9 @@ function AppLayout() {
                 <ActivityBar />
                 <Sidebar />
                 <div className={`app__main ${splitFilePath ? 'app__main--split' : ''}`} ref={mainRef}>
-                    {selectedEntryId ? (
+                    {selectedEntryId && entryViewMode === 'view' ? (
+                        <EntryViewer />
+                    ) : selectedEntryId && entryViewMode === 'edit' ? (
                         <EntryEditor />
                     ) : hasOpenFile ? (
                         <>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
-    ArrowLeft, Tag, X, Plus, Link2, Trash2,
+    ArrowLeft, Tag, X, Plus, Link2, Trash2, Upload, Image as ImageIcon,
+    Settings, GripVertical,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAppState, useAppActions } from '../store/useAppStore'
@@ -13,8 +14,8 @@ import '../styles/entryeditor.css'
  * Renders dynamic form fields based on category template.
  */
 export default function EntryEditor() {
-    const { storyBible, selectedEntryId } = useAppState()
-    const { updateBibleEntry, selectBibleEntry } = useAppActions()
+    const { storyBible, selectedEntryId, project } = useAppState()
+    const { updateBibleEntry, selectBibleEntry, setEntryViewMode } = useAppActions()
 
     const entry = useMemo(
         () => storyBible?.entries?.find(e => e.id === selectedEntryId),
@@ -37,6 +38,8 @@ export default function EntryEditor() {
     const [localSubtitle, setLocalSubtitle] = useState('')
     const [tagInput, setTagInput] = useState('')
     const [showRelPicker, setShowRelPicker] = useState(false)
+    const [resolvedImages, setResolvedImages] = useState({})
+    const [editingSubFields, setEditingSubFields] = useState(null) // fieldKey or null
     const saveTimer = useRef(null)
 
     // Sync local state when entry changes
@@ -126,13 +129,118 @@ export default function EntryEditor() {
         handleFieldChange('relationships', rels)
     }, [relationships, handleFieldChange])
 
+    // ═══ Avatar upload ═══
+    const handleAvatarClick = useCallback(async () => {
+        if (!project?.path || !entry) return
+        const result = await window.electronAPI.pickBibleImage(project.path, entry.id)
+        if (result?.ok && result.paths?.length > 0) {
+            updateBibleEntry(selectedEntryId, { avatar: result.paths[0] })
+            // Resolve URL immediately
+            const url = await window.electronAPI.resolveBibleImage(project.path, result.paths[0])
+            if (url) setResolvedImages(prev => ({ ...prev, [result.paths[0]]: url }))
+        }
+    }, [project?.path, entry, selectedEntryId, updateBibleEntry])
+
+    // ═══ Image field pick/delete ═══
+    const handlePickImages = useCallback(async (fieldKey) => {
+        if (!project?.path || !entry) return
+        const result = await window.electronAPI.pickBibleImage(project.path, entry.id)
+        if (result?.ok && result.paths?.length > 0) {
+            const current = Array.isArray(localFields[fieldKey]) ? localFields[fieldKey] : []
+            const updated = [...current, ...result.paths]
+            handleFieldChange(fieldKey, updated)
+            // Resolve URLs
+            for (const p of result.paths) {
+                const url = await window.electronAPI.resolveBibleImage(project.path, p)
+                if (url) setResolvedImages(prev => ({ ...prev, [p]: url }))
+            }
+        }
+    }, [project?.path, entry, localFields, handleFieldChange])
+
+    const handleDeleteImage = useCallback(async (fieldKey, imgPath) => {
+        if (!project?.path) return
+        await window.electronAPI.deleteBibleImage(project.path, imgPath)
+        const current = Array.isArray(localFields[fieldKey]) ? localFields[fieldKey] : []
+        const updated = current.filter(p => p !== imgPath)
+        handleFieldChange(fieldKey, updated)
+        setResolvedImages(prev => {
+            const copy = { ...prev }
+            delete copy[imgPath]
+            return copy
+        })
+    }, [project?.path, localFields, handleFieldChange])
+
+    // ═══ Resolve existing image paths on entry load ═══
+    useEffect(() => {
+        if (!entry || !project?.path) return
+        const toResolve = []
+        if (entry.avatar) toResolve.push(entry.avatar)
+        fieldTemplate.forEach(f => {
+            if (f.type === 'image' && Array.isArray(entry.fields?.[f.key])) {
+                entry.fields[f.key].forEach(p => toResolve.push(p))
+            }
+        })
+        if (toResolve.length === 0) return
+        const resolver = async () => {
+            const map = {}
+            for (const relPath of toResolve) {
+                const url = await window.electronAPI.resolveBibleImage(project.path, relPath)
+                if (url) map[relPath] = url
+            }
+            setResolvedImages(prev => ({ ...prev, ...map }))
+        }
+        resolver()
+    }, [selectedEntryId, project?.path]) // eslint-disable-line
+
     if (!entry || !category) return null
 
     const Icon = getCategoryIcon(category.icon)
 
-    // Filter fieldTemplate to exclude 'relationships' (handled separately)
-    const formFields = fieldTemplate.filter(f => f.key !== 'notes')
+    // Filter fieldTemplate to separate by type
+    const formFields = fieldTemplate.filter(f => f.key !== 'notes' && f.type !== 'image' && f.type !== 'structured')
+    const structuredFieldDefs = fieldTemplate.filter(f => f.type === 'structured')
+    const imageFieldDefs = fieldTemplate.filter(f => f.type === 'image')
     const notesField = fieldTemplate.find(f => f.key === 'notes')
+
+    // ═══ Structured field helpers ═══
+    const getSubFields = (fieldKey) => {
+        const data = localFields[fieldKey]
+        if (data && typeof data === 'object' && Array.isArray(data._subFields)) {
+            return data._subFields
+        }
+        // Find default from template
+        const def = fieldTemplate.find(f => f.key === fieldKey)
+        return def?.subFields || []
+    }
+
+    const handleStructuredChange = (fieldKey, subKey, value) => {
+        const current = (typeof localFields[fieldKey] === 'object' && localFields[fieldKey]) || {}
+        const updated = { ...current, [subKey]: value }
+        handleFieldChange(fieldKey, updated)
+    }
+
+    const handleAddSubField = (fieldKey) => {
+        const data = (typeof localFields[fieldKey] === 'object' && localFields[fieldKey]) || {}
+        const subs = data._subFields ? [...data._subFields] : []
+        const newKey = `custom_${Date.now()}`
+        subs.push({ key: newKey, label: '新欄位', placeholder: '' })
+        handleFieldChange(fieldKey, { ...data, _subFields: subs, [newKey]: '' })
+    }
+
+    const handleRenameSubField = (fieldKey, subKey, newLabel) => {
+        const data = (typeof localFields[fieldKey] === 'object' && localFields[fieldKey]) || {}
+        const subs = (data._subFields || []).map(sf =>
+            sf.key === subKey ? { ...sf, label: newLabel } : sf
+        )
+        handleFieldChange(fieldKey, { ...data, _subFields: subs })
+    }
+
+    const handleDeleteSubField = (fieldKey, subKey) => {
+        const data = (typeof localFields[fieldKey] === 'object' && localFields[fieldKey]) || {}
+        const subs = (data._subFields || []).filter(sf => sf.key !== subKey)
+        const { [subKey]: _removed, ...rest } = data
+        handleFieldChange(fieldKey, { ...rest, _subFields: subs })
+    }
 
     return (
         <motion.div
@@ -145,10 +253,10 @@ export default function EntryEditor() {
             <div className="entry-editor__header">
                 <button
                     className="entry-editor__back"
-                    onClick={() => selectBibleEntry(null)}
+                    onClick={() => setEntryViewMode('view')}
                 >
                     <ArrowLeft size={15} />
-                    <span>返回</span>
+                    <span>返回檢視</span>
                 </button>
             </div>
 
@@ -156,10 +264,25 @@ export default function EntryEditor() {
                 {/* Identity Section */}
                 <div className="entry-editor__identity">
                     <div
-                        className="entry-editor__avatar"
+                        className="entry-editor__avatar entry-editor__avatar--clickable"
                         style={{ borderColor: category.color }}
+                        onClick={handleAvatarClick}
+                        title="點擊上傳頭像"
                     >
-                        <Icon size={28} style={{ color: category.color }} />
+                        {entry.avatar && resolvedImages[entry.avatar] ? (
+                            <img
+                                src={resolvedImages[entry.avatar]}
+                                alt={entry.title}
+                                className="entry-editor__avatar-img"
+                            />
+                        ) : (
+                            <>
+                                <Icon size={28} style={{ color: category.color }} />
+                                <div className="entry-editor__avatar-overlay">
+                                    <Upload size={16} />
+                                </div>
+                            </>
+                        )}
                     </div>
                     <div className="entry-editor__identity-info">
                         <input
@@ -249,6 +372,123 @@ export default function EntryEditor() {
                         )}
                     </div>
                 ))}
+
+                {/* Structured Fields (appearance, abilities, etc.) */}
+                {structuredFieldDefs.map(field => {
+                    const data = localFields[field.key]
+                    const isLegacyString = typeof data === 'string'
+                    const subFields = getSubFields(field.key)
+                    const isEditing = editingSubFields === field.key
+
+                    return (
+                        <div key={field.key} className="entry-editor__section">
+                            <div className="entry-editor__section-title">
+                                {field.label}
+                                <button
+                                    className={`entry-editor__subfield-gear ${isEditing ? 'entry-editor__subfield-gear--active' : ''}`}
+                                    onClick={() => setEditingSubFields(isEditing ? null : field.key)}
+                                    title="管理子欄位"
+                                >
+                                    <Settings size={13} />
+                                </button>
+                            </div>
+
+                            {/* Sub-field management panel */}
+                            {isEditing && (
+                                <div className="entry-editor__subfield-mgr">
+                                    <div className="entry-editor__subfield-mgr-title">管理子欄位</div>
+                                    {subFields.map(sf => (
+                                        <div key={sf.key} className="entry-editor__subfield-mgr-row">
+                                            <GripVertical size={12} className="entry-editor__subfield-grip" />
+                                            <input
+                                                className="entry-editor__subfield-mgr-input"
+                                                value={sf.label}
+                                                onChange={(e) => handleRenameSubField(field.key, sf.key, e.target.value)}
+                                            />
+                                            <button
+                                                className="entry-editor__subfield-mgr-del"
+                                                onClick={() => handleDeleteSubField(field.key, sf.key)}
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        className="entry-editor__subfield-mgr-add"
+                                        onClick={() => handleAddSubField(field.key)}
+                                    >
+                                        <Plus size={13} />
+                                        新增子欄位
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Render sub-fields or legacy string */}
+                            {isLegacyString ? (
+                                <div className="entry-editor__subfield-legacy">
+                                    <div className="entry-editor__subfield-legacy-label">舊資料（尚未轉換為結構化格式）</div>
+                                    <textarea
+                                        className="entry-editor__textarea"
+                                        value={data}
+                                        onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                                        rows={3}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="entry-editor__subfield-grid">
+                                    {subFields.map(sf => (
+                                        <div key={sf.key} className="entry-editor__subfield-row">
+                                            <label className="entry-editor__subfield-label">
+                                                {sf.label}
+                                            </label>
+                                            <input
+                                                className="entry-editor__subfield-input"
+                                                value={(data && data[sf.key]) || ''}
+                                                onChange={(e) => handleStructuredChange(field.key, sf.key, e.target.value)}
+                                                placeholder={sf.placeholder || `輸入${sf.label}…`}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+
+                {/* Image Fields */}
+                {imageFieldDefs.map(field => {
+                    const images = Array.isArray(localFields[field.key]) ? localFields[field.key] : []
+                    return (
+                        <div key={field.key} className="entry-editor__section">
+                            <div className="entry-editor__section-title">
+                                <ImageIcon size={12} />
+                                {field.label}
+                            </div>
+                            <div className="entry-editor__image-grid">
+                                {images.map((imgPath, idx) => (
+                                    <div key={idx} className="entry-editor__image-item">
+                                        {resolvedImages[imgPath] && (
+                                            <img src={resolvedImages[imgPath]} alt="" />
+                                        )}
+                                        <button
+                                            className="entry-editor__image-del"
+                                            onClick={() => handleDeleteImage(field.key, imgPath)}
+                                        >
+                                            <Trash2 size={11} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    className="entry-editor__image-add"
+                                    onClick={() => handlePickImages(field.key)}
+                                >
+                                    <Plus size={18} />
+                                    <span>新增圖片</span>
+                                </button>
+                            </div>
+                        </div>
+                    )
+                })}
 
                 {/* Relationships */}
                 <div className="entry-editor__section">

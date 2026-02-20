@@ -300,6 +300,65 @@ export function setupFileHandlers(mainWindow) {
         }
     })
 
+    // ═══ Story Bible Images ═══
+    const BIBLE_ASSETS_DIR = '.arcbible-assets'
+
+    ipcMain.handle('pick-bible-image', async (_event, projectPath, entryId) => {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            title: '選擇圖片',
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+                { name: '圖片檔案', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'] },
+            ],
+        })
+        if (result.canceled || result.filePaths.length === 0) return { canceled: true }
+
+        try {
+            const assetsDir = path.join(projectPath, BIBLE_ASSETS_DIR, entryId)
+            if (!fs.existsSync(assetsDir)) {
+                fs.mkdirSync(assetsDir, { recursive: true })
+            }
+
+            const relativePaths = []
+            for (const srcPath of result.filePaths) {
+                const ext = path.extname(srcPath)
+                const destName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`
+                const destPath = path.join(assetsDir, destName)
+                fs.copyFileSync(srcPath, destPath)
+                // Store relative path from project root
+                relativePaths.push(path.join(BIBLE_ASSETS_DIR, entryId, destName))
+            }
+
+            return { ok: true, paths: relativePaths }
+        } catch (e) {
+            return { ok: false, error: e.message }
+        }
+    })
+
+    ipcMain.handle('delete-bible-image', async (_event, projectPath, relativePath) => {
+        try {
+            const fullPath = path.join(projectPath, relativePath)
+            if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath)
+            }
+            return true
+        } catch {
+            return false
+        }
+    })
+
+    ipcMain.handle('resolve-bible-image', async (_event, projectPath, relativePath) => {
+        try {
+            const fullPath = path.join(projectPath, relativePath)
+            if (fs.existsSync(fullPath)) {
+                return `file://${fullPath.replace(/\\/g, '/')}`
+            }
+            return null
+        } catch {
+            return null
+        }
+    })
+
     // ═══ Snapshots (Version History) ═══
     const SNAPSHOTS_DIR = '.snapshots'
 
